@@ -80,16 +80,16 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
-    const { role, mobileNumber, password } = req.body
+    const { email, password } = req.body
 
-    if (!role || !mobileNumber || !password) {
+    if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: "Required fields missing"
+        message: "Email and password required"
       })
     }
 
-    const user = await User.findOne({ mobileNumber, role })
+    const user = await User.findOne({ email })
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -107,16 +107,16 @@ exports.login = async (req, res) => {
 
     const token = generateToken(user)
 
-    return res.json({
+    res.json({
       success: true,
       data: {
         accessToken: token
       }
     })
-  } catch (error) {
-    return res.status(500).json({
+  } catch (err) {
+    res.status(500).json({
       success: false,
-      message: error.message
+      message: err.message
     })
   }
 }
