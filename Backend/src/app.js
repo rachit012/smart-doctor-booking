@@ -9,6 +9,7 @@ app.use(express.json())
 
 
 app.use("/api/auth", require("./routes/auth.routes"))
+app.use("/api/profile", require("./routes/profile.routes"))
 
 app.get("/", (req, res) => {
   res.json({ success: true, message: "API running" })
