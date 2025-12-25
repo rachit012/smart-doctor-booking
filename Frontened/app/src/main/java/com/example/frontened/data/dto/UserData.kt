@@ -1,10 +1,18 @@
 package com.example.frontened.data.dto
 
-data class UserData(
-    var firstName: String,
-    var lastName: String,
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class RegisterRequestDto(
+    var name: String,
     var email: String,
     var password: String,
-    var phoneNumber: String,
+    var mobileNumber: String,
     var role: String
+)
+
+@Serializable
+data class RegisterResponseDto(
+    val success: Boolean,
+    val message: String
 )
