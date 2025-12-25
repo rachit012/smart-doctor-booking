@@ -12,14 +12,18 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+
 import com.example.frontened.presentation.SignupScreen.SignUpScreen
 import com.example.frontened.presentation.loginScreen.LoginScreen
 import com.example.frontened.presentation.patientScreen.AppointmentScreenOfDoctor
 import com.example.frontened.presentation.patientScreen.patientScreen
+import com.example.frontened.utils.TokenManager
 
 
 @Composable
-fun MainNavigation(){
+fun MainNavigation(
+    tokenManager: TokenManager
+){
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoutes = navBackStackEntry?.destination?.route
@@ -34,8 +38,12 @@ fun MainNavigation(){
 
         NavHost(navController, startDestination = startScreen){
 
+//            composable(AppRoutes.SplashScreen.route) {
+//                SplashScreen(navController, tokenManager)
+//            }
+
             composable(AppRoutes.SignUp.route){
-                SignUpScreen(navController)
+                SignUpScreen(navController=navController)
             }
 
             composable(AppRoutes.Login.route){
