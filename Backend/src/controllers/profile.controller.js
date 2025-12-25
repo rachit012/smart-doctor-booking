@@ -15,7 +15,7 @@ exports.getProfile = async (req, res) => {
     return res.json({
       success: true,
       data: {
-        image: null, // placeholder for future
+        image: null, 
         name: user.name,
         email: user.email,
         gender: user.gender,

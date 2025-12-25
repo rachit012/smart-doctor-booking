@@ -51,10 +51,16 @@ const userSchema = new mongoose.Schema(
 
     location: {
       type: String 
+    },
+    coordinates: {
+      type: [Number],
+      required: true
     }
   },
   { timestamps: true }
 )
+
+userSchema.index({ location: "2dsphere" })
 
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return
