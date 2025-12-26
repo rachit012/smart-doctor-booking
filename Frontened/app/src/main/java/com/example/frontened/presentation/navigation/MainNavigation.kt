@@ -1,5 +1,7 @@
 package com.example.frontened.presentation.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -12,6 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.frontened.presentation.DoctorDashboard.DoctorDashboardScreen
 import com.example.frontened.presentation.ProfileScreen.ProfileScreen
 
 import com.example.frontened.presentation.SignupScreen.SignUpScreen
@@ -19,17 +22,24 @@ import com.example.frontened.presentation.components.BottomBar
 import com.example.frontened.presentation.loginScreen.LoginScreen
 
 import com.example.frontened.presentation.patientScreen.DoctorDetailScreen
+import com.example.frontened.presentation.patientScreen.PatientAppointmentScreen
 import com.example.frontened.presentation.patientScreen.patientScreen
 import com.example.frontened.utils.LocationProvider
 import com.example.frontened.utils.TokenManager
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun MainNavigation(locationProvider: LocationProvider){
+fun MainNavigation(startScreen: String, locationProvider: LocationProvider, tokenManager: TokenManager){
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoutes = navBackStackEntry?.destination?.route
-    val showBottomBar = currentRoutes in listOf("PatientScreen", "DoctorDetailScreen", "AppointmentScreen", "ProfileScreen", "VideoCallScreen")
+    val showBottomBar = currentRoutes?.substringBefore("/") in listOf(
+        AppRoutes.PatientScreen.route,
+        AppRoutes.DoctorDetailScreen.route,
+        AppRoutes.MyAppointment.route,
+        AppRoutes.ProfileScreen.route
+    )
     val context = LocalContext.current
 
 
@@ -42,7 +52,7 @@ fun MainNavigation(locationProvider: LocationProvider){
     )
     {innerPadding->
 
-        val startScreen = AppRoutes.Login.route
+
 
         NavHost(navController, startDestination = startScreen){
 
@@ -55,7 +65,7 @@ fun MainNavigation(locationProvider: LocationProvider){
             }
 
             composable(AppRoutes.Login.route){
-                LoginScreen(navController)
+                LoginScreen(navController, tokenManager = tokenManager)
             }
 
             composable(AppRoutes.PatientScreen.route){
@@ -77,6 +87,14 @@ fun MainNavigation(locationProvider: LocationProvider){
 
             composable(AppRoutes.ProfileScreen.route) {
                 ProfileScreen(navController)
+            }
+
+            composable(AppRoutes.DoctorDashBoard.route) {
+                DoctorDashboardScreen(navController)
+            }
+
+            composable(AppRoutes.MyAppointment.route) {
+                PatientAppointmentScreen(navController)
             }
         }
 
