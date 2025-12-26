@@ -63,22 +63,22 @@ fun DoctorDetailScreen(
     val bookingState by viewModel.bookingState.collectAsState()
 
 
-    // Doctor location
+
     val doctorLat = doctor.location.coordinates[1]
     val doctorLng = doctor.location.coordinates[0]
 
-    // Patient location state
+
     var patientLat by remember { mutableStateOf<Double?>(null) }
     var patientLng by remember { mutableStateOf<Double?>(null) }
 
-    // Selected time slot and date
+
     var selectedTimeSlot by remember { mutableStateOf<SlotDto?>(null) }
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
 
-    // Show confirmation dialog
+
     var showConfirmDialog by remember { mutableStateOf(false) }
 
-    // Permission state
+
     var hasPermission by remember { mutableStateOf(false) }
 
     if (!hasPermission) {
@@ -96,7 +96,7 @@ fun DoctorDetailScreen(
         }
     }
 
-    // Load availability when date changes
+
     LaunchedEffect(selectedDate) {
         viewModel.loadAvailability(
             doctorId = doctor.id,
@@ -119,11 +119,11 @@ fun DoctorDetailScreen(
                     time = selectedTimeSlot.toString() ?: ""
                 )
 
-                // ✅ Close dialog & reset UI
+
                 showConfirmDialog = false
                 selectedTimeSlot = null
 
-                // 🔄 Reload availability
+
                 viewModel.loadAvailability(
                     doctor.id,
                     selectedDate.toString()
@@ -176,7 +176,7 @@ fun DoctorDetailScreen(
         LazyColumn(
             modifier = Modifier.fillMaxSize()
         ) {
-            // Header with Back Button
+
             item {
                 Box(
                     modifier = Modifier
@@ -210,7 +210,7 @@ fun DoctorDetailScreen(
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
-            // Doctor Profile Card
+
             item {
                 Card(
                     modifier = Modifier
@@ -226,7 +226,7 @@ fun DoctorDetailScreen(
                         modifier = Modifier.padding(20.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Avatar
+
                         Box(
                             modifier = Modifier
                                 .size(100.dp)
@@ -282,7 +282,7 @@ fun DoctorDetailScreen(
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
-            // Contact Information Card
+
             item {
                 Card(
                     modifier = Modifier
@@ -321,7 +321,7 @@ fun DoctorDetailScreen(
 
                         Divider(color = Color(0xFFE0E0E0))
 
-                        // Map Button
+
                         Button(
                             modifier = Modifier.fillMaxWidth(),
                             enabled = patientLat != null && patientLng != null,
@@ -361,7 +361,7 @@ fun DoctorDetailScreen(
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
-            // Date Selection Card
+
             item {
                 Card(
                     modifier = Modifier
@@ -400,7 +400,7 @@ fun DoctorDetailScreen(
                             selectedDate = selectedDate,
                             onDateSelected = {
                                 selectedDate = it
-                                selectedTimeSlot = null // Reset slot when date changes
+                                selectedTimeSlot = null
                             }
                         )
                     }
@@ -409,7 +409,7 @@ fun DoctorDetailScreen(
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
-            // Appointment Booking Section
+
             item {
                 Card(
                     modifier = Modifier
@@ -452,7 +452,7 @@ fun DoctorDetailScreen(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Time Slots Grid
+
                         when (availabilityState) {
                             is ResultState.Loading -> {
                                 Box(
@@ -554,7 +554,7 @@ fun DoctorDetailScreen(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Book Appointment Button
+
                         Button(
                             modifier = Modifier.fillMaxWidth(),
                             enabled = selectedTimeSlot != null && selectedTimeSlot?.isBooked == false,
@@ -590,7 +590,7 @@ fun DoctorDetailScreen(
             item { Spacer(modifier = Modifier.height(24.dp)) }
         }
 
-        // Confirmation Dialog
+
         if (showConfirmDialog && selectedTimeSlot != null) {
             AlertDialog(
                 onDismissRequest = { showConfirmDialog = false },

@@ -82,19 +82,19 @@ fun patientScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
 
-            // Header Section
+
             HeaderSection(
                 searchQuery = searchQuery,
                 onSearchQueryChange = { searchQuery = it },
                 onLogoutClick = {
-                    // Handle logout
+
                     navController.navigate(AppRoutes.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }
                 }
             )
 
-            // Main Content
+
             when (val result = state) {
                 is ResultState.Loading -> {
                     Box(
@@ -190,13 +190,13 @@ fun HeaderSection(
                 .fillMaxWidth()
                 .padding(20.dp)
         ) {
-            // Top Row: Hello & Logout
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Hello Section
+
                 Column {
                     Text(
                         text = "Hello,",
@@ -211,7 +211,7 @@ fun HeaderSection(
                     )
                 }
 
-                // Logout Button
+
                 IconButton(
                     onClick = onLogoutClick,
                     modifier = Modifier
@@ -228,7 +228,7 @@ fun HeaderSection(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Search Bar
+
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = onSearchQueryChange,
@@ -361,7 +361,7 @@ fun DoctorItem(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Doctor Avatar
+
             Box(
                 modifier = Modifier
                     .size(64.dp)
@@ -379,7 +379,7 @@ fun DoctorItem(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Doctor Info
+
             Column(
                 modifier = Modifier.weight(1f)
             ) {
@@ -438,7 +438,7 @@ fun DoctorItem(
                 }
             }
 
-            // Arrow Icon
+
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = null,

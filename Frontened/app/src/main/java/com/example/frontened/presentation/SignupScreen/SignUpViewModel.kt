@@ -1,5 +1,6 @@
 package com.example.frontened.presentation.SignupScreen
 
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -22,8 +23,11 @@ class SignUpViewModel @Inject constructor(
     val state: StateFlow<SingUpState> = _state
 
     fun registerUser(request: RegisterRequestDto) {
+        Log.d("SIGNUP_VM", "Request: $request")
         viewModelScope.launch {
             registerUserUseCase(request).collect { result->
+
+                Log.d("SIGNUP_VM", "Result: $result")
                 when(result) {
 
                     is ResultState.Loading -> {
@@ -33,7 +37,7 @@ class SignUpViewModel @Inject constructor(
                     is ResultState.Success -> {
                         _state.value = SingUpState(
                             loading = false,
-                            message = result.data
+                            message = "Account Created Successfully"
                         )
                     }
 
@@ -46,5 +50,9 @@ class SignUpViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun clearState() {
+        _state.value = _state.value.copy(message = null)
     }
 }

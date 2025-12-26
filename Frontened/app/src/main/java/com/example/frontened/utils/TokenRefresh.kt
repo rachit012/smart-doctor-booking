@@ -15,7 +15,7 @@ class TokenRefresh @Inject constructor(
 
     override fun authenticate(route: Route?, response: Response): Request? {
 
-        // avoid infinite loop
+
         if (responseCount(response) >= 2) return null
 
         val newToken = try {

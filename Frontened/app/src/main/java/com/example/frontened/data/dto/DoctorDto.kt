@@ -16,7 +16,7 @@ data class DoctorDto(
 @Parcelize
 data class LocationDto(
     val type: String,
-    val coordinates: List<Double> // [lng, lat]
+    val coordinates: List<Double>
 ): Parcelable
 
 

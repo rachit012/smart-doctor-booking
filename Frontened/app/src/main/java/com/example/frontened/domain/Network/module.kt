@@ -2,10 +2,16 @@ package com.example.frontened.domain.Network
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.frontened.data.repository.AppointmentRepoImpl
 import com.example.frontened.data.repository.Auth.AuthRepoImpl
-import com.example.frontened.data.repository.fake.FakeAuthRepository
+
+
+import com.example.frontened.domain.di.AppointmentApi
 import com.example.frontened.domain.di.AuthApi
+import com.example.frontened.domain.di.ProfileApi
+import com.example.frontened.domain.repo.AppointmentRepository
 import com.example.frontened.domain.repo.AuthRepository
+import com.example.frontened.domain.repo.ProfileRepository
 import com.example.frontened.utils.TokenManager
 import com.example.frontened.utils.TokenRefresh
 import dagger.Module
@@ -14,8 +20,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
@@ -26,7 +34,7 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(client: OkHttpClient): Retrofit =
         Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:5000/")
+            .baseUrl("https://smart-doctor-backend-8blr.onrender.com/")
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -36,10 +44,14 @@ object NetworkModule {
     fun provideAuthApi(retrofit: Retrofit): AuthApi =
         retrofit.create(AuthApi::class.java)
 
+
+
     @Provides
     @Singleton
     fun provideAuthRepository(api: AuthApi, tokenManager: TokenManager): AuthRepository =
         AuthRepoImpl(api,tokenManager)
+
+
 
     @Provides
     @Singleton
@@ -54,18 +66,65 @@ object NetworkModule {
         sharedPreferences: SharedPreferences
     ): TokenManager = TokenManager(sharedPreferences)
 
+
     @Provides
     @Singleton
     fun provideOkHttpClient(
         authInterceptor: AuthInterceptor,
         tokenRefresh: TokenRefresh
     ): OkHttpClient {
+
+        val loggingInterceptor = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
         return OkHttpClient.Builder()
-            .addInterceptor(authInterceptor)
-            .authenticator(tokenRefresh)
+            .connectTimeout(60, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS)
+            .addInterceptor(loggingInterceptor)
+            .addInterceptor(authInterceptor)   // ✅ Interceptor
+            .authenticator(tokenRefresh)        // ✅ Authenticator
             .build()
     }
 
+    @Provides
+    @Singleton
+    fun provideAppointmentApi(
+        retrofit: Retrofit
+    ): AppointmentApi =
+        retrofit.create(AppointmentApi::class.java)
+
+//    @Provides
+//    @Singleton
+//    fun provideOkHttpClient(
+//        authInterceptor: AuthInterceptor,
+//        tokenRefresh: TokenRefresh
+//    ): OkHttpClient {
+//        return OkHttpClient.Builder()
+//            .addInterceptor(authInterceptor)
+//            .authenticator(tokenRefresh)
+//            .build()
+//    }
+
+
+//    @Module
+//    @InstallIn(SingletonComponent::class)
+//    object FakeRepoModule {
+//
+//        @Provides
+//        @Singleton
+//        fun provideAuthRepository(
+//            tokenManager: TokenManager
+//        ): AuthRepository {
+//            return FakeAuthRepository(tokenManager)
+//        }
+//    }
+
+    @Provides
+    @Singleton
+    fun provideAppointmentRepository(
+        api: AppointmentApi
+    ): AppointmentRepository = AppointmentRepoImpl(api)
 
 
 

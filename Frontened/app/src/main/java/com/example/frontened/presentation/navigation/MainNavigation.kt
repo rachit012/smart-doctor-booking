@@ -38,7 +38,8 @@ fun MainNavigation(startScreen: String, locationProvider: LocationProvider, toke
         AppRoutes.PatientScreen.route,
         AppRoutes.DoctorDetailScreen.route,
         AppRoutes.MyAppointment.route,
-        AppRoutes.ProfileScreen.route
+        AppRoutes.ProfileScreen.route,
+        AppRoutes.DoctorDashBoard.route
     )
     val context = LocalContext.current
 
@@ -61,7 +62,7 @@ fun MainNavigation(startScreen: String, locationProvider: LocationProvider, toke
 //            }
 
             composable(AppRoutes.SignUp.route){
-                SignUpScreen(navController=navController)
+                SignUpScreen(navController=navController, tokenManager = tokenManager)
             }
 
             composable(AppRoutes.Login.route){
@@ -86,7 +87,7 @@ fun MainNavigation(startScreen: String, locationProvider: LocationProvider, toke
             }
 
             composable(AppRoutes.ProfileScreen.route) {
-                ProfileScreen(navController)
+                ProfileScreen(navController, tokenManager = tokenManager)
             }
 
             composable(AppRoutes.DoctorDashBoard.route) {
