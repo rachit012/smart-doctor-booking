@@ -6,7 +6,6 @@ exports.bookAppointment = async (req, res) => {
     const { doctorId, date, startTime, endTime } = req.body
     const patientId = req.user._id
 
-    // 1️⃣ Check patient conflict
     const patientConflict = await Appointment.findOne({
       patientId,
       date,
@@ -20,7 +19,6 @@ exports.bookAppointment = async (req, res) => {
       })
     }
 
-    // 2️⃣ Atomically book slot
     const availability = await Availability.findOneAndUpdate(
       {
         doctorId,
@@ -40,7 +38,6 @@ exports.bookAppointment = async (req, res) => {
       })
     }
 
-    // 3️⃣ Create appointment
     const appointment = await Appointment.create({
       doctorId,
       patientId,
@@ -56,5 +53,23 @@ exports.bookAppointment = async (req, res) => {
     })
   } catch (error) {
     res.status(500).json({ message: error.message })
+  }
+}
+
+exports.getMyAppointments = async (req, res) => {
+  try {
+    const appointments = await Appointment.find({
+      patientId: req.user._id
+    }).sort({ date: 1, startTime: 1 })
+
+    res.json({
+      success: true,
+      data: appointments
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    })
   }
 }
