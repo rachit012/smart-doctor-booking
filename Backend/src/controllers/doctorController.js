@@ -1,7 +1,6 @@
 const User = require("../models/User")
 const Availability = require("../models/Availability")
 
-// 1️⃣ Find doctors by speciality & date
 exports.getDoctorsBySpeciality = async (req, res) => {
   try {
     const { speciality, date } = req.query
@@ -35,7 +34,6 @@ exports.getDoctorsBySpeciality = async (req, res) => {
   }
 }
 
-// 2️⃣ Find nearby doctors (sorted by distance)
 exports.getNearbyDoctors = async (req, res) => {
   try {
     const { lat, lng, speciality } = req.query
@@ -48,7 +46,7 @@ exports.getNearbyDoctors = async (req, res) => {
             type: "Point",
             coordinates: [Number(lng), Number(lat)]
           },
-          $maxDistance: 10000 // 10 km
+          $maxDistance: 10000 
         }
       }
     }
