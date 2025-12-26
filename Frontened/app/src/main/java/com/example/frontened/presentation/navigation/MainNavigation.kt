@@ -12,26 +12,34 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.frontened.presentation.ProfileScreen.ProfileScreen
 
 import com.example.frontened.presentation.SignupScreen.SignUpScreen
+import com.example.frontened.presentation.components.BottomBar
 import com.example.frontened.presentation.loginScreen.LoginScreen
-import com.example.frontened.presentation.patientScreen.AppointmentScreenOfDoctor
+
+import com.example.frontened.presentation.patientScreen.DoctorDetailScreen
 import com.example.frontened.presentation.patientScreen.patientScreen
+import com.example.frontened.utils.LocationProvider
 import com.example.frontened.utils.TokenManager
 
 
 @Composable
-fun MainNavigation(
-    tokenManager: TokenManager
-){
+fun MainNavigation(locationProvider: LocationProvider){
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoutes = navBackStackEntry?.destination?.route
-
+    val showBottomBar = currentRoutes in listOf("PatientScreen", "DoctorDetailScreen", "AppointmentScreen", "ProfileScreen", "VideoCallScreen")
     val context = LocalContext.current
 
 
-    Scaffold()
+    Scaffold(
+        bottomBar = {
+            if(showBottomBar){
+                BottomBar(navController)
+            }
+        }
+    )
     {innerPadding->
 
         val startScreen = AppRoutes.Login.route
@@ -52,17 +60,23 @@ fun MainNavigation(
 
             composable(AppRoutes.PatientScreen.route){
 
-                patientScreen(navController)
+                patientScreen(navController, locationProvider = locationProvider)
             }
 
             composable(
-                route = AppRoutes.AppointmentScreenOfDoctor.route,
+                route = AppRoutes.DoctorDetailScreen.route,
                 arguments = listOf(
-                    navArgument("doctorName"){ type = NavType.StringType}
+                    navArgument("doctorName") { type = NavType.StringType }
                 )
-            ){backStackEntry->
-                val doctorName = backStackEntry.arguments?.getString("doctorName")!!
-                AppointmentScreenOfDoctor(doctorName)
+            ) {
+                DoctorDetailScreen(
+                    navController = navController,
+                    locationProvider = locationProvider
+                )
+            }
+
+            composable(AppRoutes.ProfileScreen.route) {
+                ProfileScreen(navController)
             }
         }
 

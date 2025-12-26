@@ -1,8 +1,13 @@
 package com.example.frontened.data.repository.Auth
 
+
+
+import android.util.Log
 import androidx.compose.material3.CircularProgressIndicator
 import com.example.frontened.common.ResultState
+import com.example.frontened.data.dto.DoctorDto
 import com.example.frontened.data.dto.LoginRequestData
+import com.example.frontened.data.dto.ProfileDto
 import com.example.frontened.data.dto.RegisterRequestDto
 import com.example.frontened.domain.di.AuthApi
 import com.example.frontened.domain.repo.AuthRepository
@@ -45,7 +50,7 @@ class AuthRepoImpl @Inject constructor(
     }
 
     override fun loginUser(request: LoginRequestData): Flow<ResultState<String>> = flow {
-         emit(ResultState.Loading)
+        emit(ResultState.Loading)
 
         try {
             val response = api.loginUser(request)
@@ -63,4 +68,45 @@ class AuthRepoImpl @Inject constructor(
             emit(ResultState.Error(e.localizedMessage?:"Something went wrong"))
         }
     }
+
+    override fun fetchProfile(): Flow<ResultState<ProfileDto>> = flow{
+        emit(ResultState.Loading)
+
+        try {
+            val response = api.fetchProfile()
+            if(response.success){
+                Log.d("User details: ", "${response.data}")
+                emit(ResultState.Success(response.data))
+            }else{
+                emit(ResultState.Error("Failed to fetch data"))
+            }
+        }catch (e: coil.network.HttpException){
+            emit(ResultState.Error("Unauthorized / Server error"))
+        }catch (e: Exception) {
+            emit(ResultState.Error(e.localizedMessage ?: "Something went wrong"))
+        }
+    }
+
+    override fun fetchNearbyDoctors(
+        lat: Double,
+        lng: Double
+    ): Flow<ResultState<List<DoctorDto>>> = flow {
+        emit(ResultState.Loading)
+
+
+        try {
+            val response = api.getNearbyDoctors(lat, lng)
+
+            if (response.success) {
+                emit(ResultState.Success(response.data))
+            } else {
+                emit(ResultState.Error("No doctors found"))
+            }
+
+        } catch (e: Exception) {
+            emit(ResultState.Error(e.localizedMessage ?: "Something went wrong"))
+        }
+    }
+
+
 }

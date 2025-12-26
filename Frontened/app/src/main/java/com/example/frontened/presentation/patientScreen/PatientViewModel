@@ -1,0 +1,34 @@
+package com.example.frontened.presentation.patientScreen
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.frontened.common.ResultState
+import com.example.frontened.data.dto.DoctorDto
+import com.example.frontened.data.dto.NearbyDoctorResponse
+import com.example.frontened.domain.UseCase.NearbyDoctorUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+
+@HiltViewModel
+class PatientViewModel @Inject constructor(
+    private val nearbyDoctorUseCase: NearbyDoctorUseCase
+) : ViewModel() {
+
+    private val _state =
+        MutableStateFlow<ResultState<List<DoctorDto>>>(ResultState.Loading)
+
+    val state: StateFlow<ResultState<List<DoctorDto>>> = _state
+
+    fun loadNearbyDoctors(lat: Double, lng: Double) {
+        viewModelScope.launch {
+            nearbyDoctorUseCase(lat, lng)
+                .collect { result ->
+                    _state.value = result   // ✅ handle ALL states
+                }
+        }
+    }
+}
