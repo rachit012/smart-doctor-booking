@@ -1,8 +1,8 @@
 const express = require("express")
 const router = express.Router()
 const { bookAppointment } = require("../controllers/appointmentController")
-const auth = require("../middleware/authMiddleware")
+const {protect} = require("../middlewares/auth.middleware")
 
-router.post("/book", auth, bookAppointment)
+router.post("/book", protect, bookAppointment)
 
 module.exports = router

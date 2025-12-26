@@ -4,9 +4,9 @@ const {
   addAvailability,
   getAvailability
 } = require("../controllers/availabilityController")
-const auth = require("../middleware/authMiddleware")
+const {protect} = require("../middlewares/auth.middleware")
 
-router.post("/add", auth, addAvailability)
+router.post("/add", protect, addAvailability)
 router.get("/", getAvailability)
 
 module.exports = router
