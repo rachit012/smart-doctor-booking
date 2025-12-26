@@ -5,10 +5,12 @@ package com.example.frontened.data.repository.Auth
 import android.util.Log
 import androidx.compose.material3.CircularProgressIndicator
 import com.example.frontened.common.ResultState
+import com.example.frontened.data.dto.AvailabilityRequest
 import com.example.frontened.data.dto.DoctorDto
 import com.example.frontened.data.dto.LoginRequestData
 import com.example.frontened.data.dto.ProfileDto
 import com.example.frontened.data.dto.RegisterRequestDto
+import com.example.frontened.data.dto.SlotDto
 import com.example.frontened.domain.di.AuthApi
 import com.example.frontened.domain.repo.AuthRepository
 import com.example.frontened.utils.TokenManager
@@ -103,6 +105,48 @@ class AuthRepoImpl @Inject constructor(
                 emit(ResultState.Error("No doctors found"))
             }
 
+        } catch (e: Exception) {
+            emit(ResultState.Error(e.localizedMessage ?: "Something went wrong"))
+        }
+    }
+
+    override suspend fun addAvailability(
+        date: String,
+        slots: List<SlotDto>
+    ): ResultState<String> {
+        return try {
+            val response = api.addAvailability(
+                AvailabilityRequest(date, slots)
+            )
+            if (response.success) {
+                ResultState.Success(response.message)
+            } else {
+                ResultState.Error(response.message)
+            }
+        } catch (e: Exception) {
+            ResultState.Error(e.message ?: "Something went wrong")
+        }
+    }
+
+    override suspend fun getAvailability(
+        doctorId: String,
+        date: String
+    ): Flow<ResultState<List<SlotDto>>> = flow {
+        emit(ResultState.Loading)
+
+        try {
+            val response = api.getDoctorAvailability(doctorId, date)
+
+            if (response.success && response.data != null) {
+                emit(ResultState.Success(response.data.slots))
+            } else {
+                emit(ResultState.Error(response.message ))
+            }
+
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: HttpException) {
+            emit(ResultState.Error("Server error: ${e.code()}"))
         } catch (e: Exception) {
             emit(ResultState.Error(e.localizedMessage ?: "Something went wrong"))
         }

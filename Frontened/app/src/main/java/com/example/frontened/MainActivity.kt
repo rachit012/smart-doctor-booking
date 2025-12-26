@@ -1,9 +1,11 @@
 package com.example.frontened
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -13,6 +15,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.app.ActivityCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.frontened.presentation.Auth.AuthState
 import com.example.frontened.presentation.Auth.AuthViewModel
@@ -29,6 +32,10 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var locationProvider: LocationProvider
+
+    @Inject
+    lateinit var tokenManager: TokenManager
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -38,12 +45,20 @@ class MainActivity : ComponentActivity() {
 
             when (authState) {
                 AuthState.Authenticated -> {
-                    MainNavigation(startScreen = AppRoutes.PatientScreen.route, locationProvider)
+                    MainNavigation(startScreen = AppRoutes.PatientScreen.route, locationProvider, tokenManager)
                 }
 
                 AuthState.Unauthenticated -> {
-                    MainNavigation(startScreen = AppRoutes.Login.route, locationProvider)
+                    MainNavigation(startScreen = AppRoutes.Login.route, locationProvider, tokenManager)
                 }
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                    1001
+                )
             }
         }
     }

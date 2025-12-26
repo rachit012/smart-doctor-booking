@@ -6,6 +6,7 @@ import com.example.frontened.data.dto.LoginRequestData
 import com.example.frontened.data.dto.ProfileDto
 import com.example.frontened.data.dto.RegisterRequestDto
 import com.example.frontened.data.dto.RegisterResponseDto
+import com.example.frontened.data.dto.SlotDto
 import kotlinx.coroutines.flow.Flow
 
 interface AuthRepository {
@@ -20,4 +21,14 @@ interface AuthRepository {
         lat: Double,
         lng: Double
     ): Flow<ResultState<List<DoctorDto>>>
+
+    suspend fun addAvailability(
+        date: String,
+        slots: List<SlotDto>
+    ): ResultState<String>
+
+    suspend fun getAvailability(
+        doctorId: String,
+        date: String
+    ): Flow<ResultState<List<SlotDto>>>
 }

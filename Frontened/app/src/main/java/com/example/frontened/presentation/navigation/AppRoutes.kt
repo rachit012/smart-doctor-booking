@@ -17,4 +17,8 @@ sealed class AppRoutes(val route: String){
 
 
     object ProfileScreen: AppRoutes("ProfileScreen")
+
+    object DoctorDashBoard: AppRoutes("DoctorDashboardScreen")
+
+    object MyAppointment: AppRoutes("MyAppointment")
 }
