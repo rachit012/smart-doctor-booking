@@ -370,7 +370,9 @@ fun SignUpScreen(
 
     state.message?.let {
         Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-        navController.navigate(AppRoutes.PatientScreen.route)
+        navController.navigate(AppRoutes.PatientScreen.route){
+            popUpTo(AppRoutes.SignUp.route) { inclusive = true }
+        }
     }
 
     state.error?.let {
