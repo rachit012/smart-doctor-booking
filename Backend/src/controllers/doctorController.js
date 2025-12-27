@@ -60,7 +60,10 @@ exports.getNearbyDoctors = async (req, res) => {
       }
     }
 
-    if (speciality) query.speciality = speciality
+    if (speciality) {
+      query.speciality = speciality.trim().toLowerCase()
+    }
+
 
     const doctors = await User.find(query).select("-password")
 

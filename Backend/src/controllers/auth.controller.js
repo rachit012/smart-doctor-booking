@@ -89,6 +89,11 @@ exports.register = async (req, res) => {
       delete req.body.location
     }
 
+    const normalizedSpeciality =
+      role === "DOCTOR"
+        ? speciality.trim().toLowerCase()
+        : undefined
+
     const user = await User.create({
       role,
       name,
@@ -98,7 +103,7 @@ exports.register = async (req, res) => {
       gender,
       dob,
       fee: role === "DOCTOR" ? fee : undefined,
-      speciality: role === "DOCTOR" ? speciality : undefined,
+      speciality: normalizedSpeciality,
       city: role === "DOCTOR" ? city : undefined,
       address: role === "DOCTOR" ? address : undefined,
       location: role === "DOCTOR" ? locationData : undefined
