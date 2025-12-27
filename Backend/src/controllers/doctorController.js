@@ -36,7 +36,7 @@ exports.getDoctorsBySpeciality = async (req, res) => {
 
 exports.getNearbyDoctors = async (req, res) => {
   try {
-    const { lat, lng, distance=5, speciality } = req.query
+    const { lat, lng, distance = 1000, speciality } = req.query
 
     if (!lat || !lng) {
       return res.status(400).json({
@@ -45,30 +45,48 @@ exports.getNearbyDoctors = async (req, res) => {
       })
     }
 
-    const query = {
-      role: "DOCTOR",
-      "location.type": "Point",
-      "location.coordinates": { $exists: true, $ne: [] },
-      location: {
-        $nearSphere: {
-          $geometry: {
+    const pipeline = [
+      {
+        $geoNear: {
+          near: {
             type: "Point",
             coordinates: [Number(lng), Number(lat)]
           },
-          $maxDistance: Number(distance) * 1000
+          distanceField: "distance", 
+          maxDistance: Number(distance) * 1000,
+          spherical: true,
+          query: {
+            role: "DOCTOR",
+            "location.type": "Point",
+            ...(speciality && {
+              speciality: speciality.trim().toLowerCase()
+            })
+          }
+        }
+      },
+      {
+        $project: {
+          password: 0
         }
       }
-    }
+    ]
 
-    if (speciality) {
-      query.speciality = speciality.trim().toLowerCase()
-    }
+    const doctors = await User.aggregate(pipeline)
 
+    const formattedDoctors = doctors.map(doc => ({
+      ...doc,
+      distance: Number((doc.distance / 1000).toFixed(2))
+    }))
 
-    const doctors = await User.find(query).select("-password")
-
-    res.json({ success: true, data: doctors })
+    res.json({
+      success: true,
+      data: formattedDoctors
+    })
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    res.status(500).json({
+      success: false,
+      message: error.message
+    })
   }
 }
+
