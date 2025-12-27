@@ -301,7 +301,14 @@ fun AppointmentCard(
                             color = Color.Gray
                         )
                         Text(
-                            text = appointment.patientId.takeLast(8),
+                            text = appointment.patientId.name,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF333333)
+                        )
+
+                        Text(
+                            text = appointment.patientId.mobileNumber,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = Color(0xFF333333)
@@ -381,39 +388,39 @@ fun AppointmentCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    OutlinedButton(
-                        onClick = { /* Handle cancel */ },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = Color(0xFFEF5350)
-                        )
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Cancel", fontSize = 13.sp)
-                    }
+//                    OutlinedButton(
+//                        onClick = { /* Handle cancel */ },
+//                        modifier = Modifier.weight(1f),
+//                        shape = RoundedCornerShape(8.dp),
+//                        colors = ButtonDefaults.outlinedButtonColors(
+//                            contentColor = Color(0xFFEF5350)
+//                        )
+//                    ) {
+//                        Icon(
+//                            imageVector = Icons.Default.Close,
+//                            contentDescription = null,
+//                            modifier = Modifier.size(16.dp)
+//                        )
+//                        Spacer(modifier = Modifier.width(4.dp))
+//                        Text("Cancel", fontSize = 13.sp)
+//                    }
 
-                    Button(
-                        onClick = { /* Handle complete */ },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = primaryColor
-                        )
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Complete", fontSize = 13.sp)
-                    }
+//                    Button(
+//                        onClick = { /* Handle complete */ },
+//                        modifier = Modifier.weight(1f),
+//                        shape = RoundedCornerShape(8.dp),
+//                        colors = ButtonDefaults.buttonColors(
+//                            containerColor = primaryColor
+//                        )
+//                    ) {
+//                        Icon(
+//                            imageVector = Icons.Default.Check,
+//                            contentDescription = null,
+//                            modifier = Modifier.size(16.dp)
+//                        )
+//                        Spacer(modifier = Modifier.width(4.dp))
+//                        Text("Complete", fontSize = 13.sp)
+//                    }
                 }
             }
         }
