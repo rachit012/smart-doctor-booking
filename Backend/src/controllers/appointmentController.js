@@ -85,7 +85,9 @@ exports.getDoctorAppointments = async (req, res) => {
 
     const appointments = await Appointment.find({
       doctorId: req.user._id
-    }).sort({ date: 1, startTime: 1 })
+    })
+      .populate("patientId", "name mobileNumber")
+      .sort({ date: 1, startTime: 1 })
 
     res.json({
       success: true,
@@ -99,3 +101,49 @@ exports.getDoctorAppointments = async (req, res) => {
   }
 }
 
+exports.cancelAppointment = async (req, res) => {
+  try {
+    const { appointmentId } = req.params
+
+    // Only patients can cancel
+    if (req.user.role !== "PATIENT") {
+      return res.status(403).json({
+        success: false,
+        message: "Only patients can cancel appointments"
+      })
+    }
+
+    const appointment = await Appointment.findOne({
+      _id: appointmentId,
+      patientId: req.user._id
+    })
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: "Appointment not found"
+      })
+    }
+
+    if (appointment.status === "CANCELLED") {
+      return res.status(400).json({
+        success: false,
+        message: "Appointment already cancelled"
+      })
+    }
+
+    appointment.status = "CANCELLED"
+    await appointment.save()
+
+    res.json({
+      success: true,
+      message: "Appointment cancelled successfully",
+      data: appointment
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    })
+  }
+}
