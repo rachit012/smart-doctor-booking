@@ -56,7 +56,9 @@ const userSchema = new mongoose.Schema(
       },
       coordinates: {
         type: [Number],
-        required: false
+        required: function () {
+          return this.role === "DOCTOR"
+        }
       }
     }
   },

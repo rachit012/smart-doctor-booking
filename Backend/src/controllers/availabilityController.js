@@ -1,6 +1,5 @@
 const Availability = require("../models/Availability")
 
-// Doctor adds availability
 exports.addAvailability = async (req, res) => {
   try {
     const { date, slots } = req.body
@@ -32,7 +31,6 @@ exports.addAvailability = async (req, res) => {
   }
 }
 
-// Get availability by doctor & date
 exports.getAvailability = async (req, res) => {
   try {
     const { doctorId, date } = req.query
