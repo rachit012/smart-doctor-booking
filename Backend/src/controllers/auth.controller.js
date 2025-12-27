@@ -21,8 +21,18 @@ const generateRefreshToken = (user) => {
 
 const geocodeCity = async (city) => {
   const response = await fetch(
-    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`
+    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`,
+    {
+      headers: {
+        "User-Agent": "Doctor-App/1.0 (contact: test@example.com)",
+        "Accept": "application/json"
+      }
+    }
   )
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch location data")
+  }
 
   const data = await response.json()
 
@@ -35,6 +45,7 @@ const geocodeCity = async (city) => {
     lng: Number(data[0].lon)
   }
 }
+
 
 exports.register = async (req, res) => {
   try {
