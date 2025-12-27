@@ -105,7 +105,6 @@ exports.cancelAppointment = async (req, res) => {
   try {
     const { appointmentId } = req.params
 
-    // Only patients can cancel
     if (req.user.role !== "PATIENT") {
       return res.status(403).json({
         success: false,
@@ -132,13 +131,24 @@ exports.cancelAppointment = async (req, res) => {
       })
     }
 
+    await Availability.updateOne(
+      {
+        doctorId: appointment.doctorId,
+        date: appointment.date,
+        "slots.startTime": appointment.startTime,
+        "slots.endTime": appointment.endTime
+      },
+      {
+        $set: { "slots.$.isBooked": false }
+      }
+    )
+
     appointment.status = "CANCELLED"
     await appointment.save()
 
     res.json({
       success: true,
-      message: "Appointment cancelled successfully",
-      data: appointment
+      message: "Appointment cancelled and slot freed successfully"
     })
   } catch (error) {
     res.status(500).json({
