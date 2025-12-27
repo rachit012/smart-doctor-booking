@@ -49,7 +49,8 @@ fun SignUpScreen(
     var password by rememberSaveable { mutableStateOf("") }
     var fee by rememberSaveable { mutableStateOf("") }
     var speciality by rememberSaveable { mutableStateOf("") }
-    var location by rememberSaveable { mutableStateOf("") }
+    var city by rememberSaveable { mutableStateOf("") }
+    var address by rememberSaveable { mutableStateOf("") }
     var gender by rememberSaveable { mutableStateOf("") }
     var dob by rememberSaveable { mutableStateOf("") }
 
@@ -308,9 +309,18 @@ fun SignUpScreen(
                         )
 
                         CustomTextField(
-                            value = location,
-                            onValueChange = { location = it },
-                            label = "Clinic Location",
+                            value = city,
+                            onValueChange = { city = it },
+                            label = "Enter city",
+                            singleLine = false,
+                            leadingIcon = Icons.Default.LocationOn,
+                            color = Color(0xFF424242)
+                        )
+
+                        CustomTextField(
+                            value = address,
+                            onValueChange = { address = it },
+                            label = "Enter Address",
                             singleLine = false,
                             leadingIcon = Icons.Default.LocationOn,
                             color = Color(0xFF424242)
@@ -335,7 +345,7 @@ fun SignUpScreen(
                         gender.isEmpty() ||
                         dob.isEmpty() ||
                         (role == "DOCTOR" &&
-                                (fee.isEmpty() || speciality.isEmpty() || location.isEmpty()))
+                                (fee.isEmpty() || speciality.isEmpty() || city.isEmpty() || address.isEmpty()))
                     ) {
                         Toast.makeText(context, "Fill all required fields", Toast.LENGTH_SHORT)
                             .show()
@@ -353,7 +363,8 @@ fun SignUpScreen(
                             dob = dob,
                             fee = if (role == "DOCTOR") fee.toIntOrNull() else null,
                             speciality = if (role == "DOCTOR") speciality else null,
-                            location = if (role == "DOCTOR") location else null
+                            city = if (role == "DOCTOR") city.trim() else null,
+                            address = if (role == "DOCTOR") address.trim() else null
                         )
                     )
                 },

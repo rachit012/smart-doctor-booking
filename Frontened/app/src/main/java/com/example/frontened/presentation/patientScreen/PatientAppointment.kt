@@ -50,7 +50,7 @@ fun PatientAppointmentScreen(
                 text = (state as ResultState.Error<List<AppointmentDto>>).message,
                 modifier = Modifier.padding(16.dp),
 
-            )
+                )
         }
 
         is ResultState.Success -> {

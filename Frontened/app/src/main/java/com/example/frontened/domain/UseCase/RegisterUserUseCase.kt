@@ -18,10 +18,20 @@ class RegisterUserUseCase @Inject constructor(
         return repo.registerUser(request)
     }
 
-    suspend operator fun invoke(
+//    suspend operator fun invoke(
+//        request: LoginRequestData
+//    ): Flow<ResultState<String>> {
+//        return repo.loginUser(request)
+//    }
+
+}
+
+class LoginUserUseCase @Inject constructor(
+    private val authRepository: AuthRepository
+) {
+    operator fun invoke(
         request: LoginRequestData
     ): Flow<ResultState<String>> {
-        return repo.loginUser(request)
+        return authRepository.loginUser(request)
     }
-
 }

@@ -1,5 +1,6 @@
 package com.example.frontened.presentation.patientScreen
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.frontened.common.ResultState
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.example.frontened.data.dto.DoctorAvailabilityDto
 
 
 @HiltViewModel
@@ -44,9 +46,9 @@ class PatientViewModel @Inject constructor(
     val appointmentsState: StateFlow<ResultState<List<AppointmentDto>>> =
         _appointmentsState
 
-    fun loadNearbyDoctors(lat: Double, lng: Double) {
+    fun loadNearbyDoctors(lat: Double, lng: Double, distance: Int) {
         viewModelScope.launch {
-            nearbyDoctorUseCase(lat, lng)
+            nearbyDoctorUseCase(lat, lng, distance)
                 .collect { result ->
                     _state.value = result   // ✅ handle ALL states
                 }
@@ -57,9 +59,15 @@ class PatientViewModel @Inject constructor(
 
     fun loadAvailability(doctorId: String, date: String) {
         viewModelScope.launch {
+            Log.d("AVAILABILITY", "doctorId=$doctorId, date=$date")
+
+            _state1.value = ResultState.Loading
+
             repo.getAvailability(doctorId, date)
-                .collect {result->
-                    _state1.value = result }
+                .collect { result ->
+                    Log.d("AVAILABILITY_VM", "state = $result")
+                    _state1.value = result
+                }
         }
     }
 

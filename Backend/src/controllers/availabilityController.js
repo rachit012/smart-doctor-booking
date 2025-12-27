@@ -37,9 +37,24 @@ exports.getAvailability = async (req, res) => {
 
     const availability = await Availability.findOne({ doctorId, date })
 
-    res.json({
+    if (!availability) {
+      return res.json({
+        success: true,
+        data: {
+          doctorId,
+          date,
+          slots: []
+        }
+      })
+    }
+
+    return res.json({
       success: true,
-      data: availability || []
+      data: {
+        doctorId: availability.doctorId,
+        date: availability.date,
+        slots: availability.slots || []
+      }
     })
   } catch (error) {
     res.status(500).json({ message: error.message })
