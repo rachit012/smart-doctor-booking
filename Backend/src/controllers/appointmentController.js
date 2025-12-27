@@ -73,3 +73,29 @@ exports.getMyAppointments = async (req, res) => {
     })
   }
 }
+
+exports.getDoctorAppointments = async (req, res) => {
+  try {
+    if (req.user.role !== "DOCTOR") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied"
+      })
+    }
+
+    const appointments = await Appointment.find({
+      doctorId: req.user._id
+    }).sort({ date: 1, startTime: 1 })
+
+    res.json({
+      success: true,
+      data: appointments
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    })
+  }
+}
+

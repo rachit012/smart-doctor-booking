@@ -18,6 +18,42 @@ const generateRefreshToken = (user) => {
   )
 }
 
+const geocodeCity = async (city) => {
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+      city
+    )}&format=json&limit=1`
+
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": "Veersa-Hackathon-Doctor-App/1.0 (contact: rachit.thakur@gmail.com)",
+        "Accept": "application/json",
+        "Referer": "http://localhost:5000"
+      }
+    })
+
+    console.log("Nominatim status:", response.status)
+
+    if (!response.ok) {
+      throw new Error(`Nominatim error: ${response.status}`)
+    }
+
+    const data = await response.json()
+
+    if (!data.length) {
+      throw new Error("Invalid city name")
+    }
+
+    return {
+      lat: Number(data[0].lat),
+      lng: Number(data[0].lon)
+    }
+  } catch (err) {
+    console.error("Geocoding failed:", err.message)
+    throw new Error("Failed to fetch location data")
+  }
+}
+
 exports.register = async (req, res) => {
   try {
     const {
@@ -30,7 +66,8 @@ exports.register = async (req, res) => {
       dob,
       fee,
       speciality,
-      location
+      city,
+      address
     } = req.body
 
     if (!role || !name || !email || !mobileNumber || !password) {
@@ -40,7 +77,7 @@ exports.register = async (req, res) => {
       })
     }
 
-    if (role === "DOCTOR" && (!fee || !speciality || !location)) {
+    if (role === "DOCTOR" && (!fee || !speciality || !city)) {
       return res.status(400).json({
         success: false,
         message: "Doctor must provide fee, speciality and location"
@@ -55,6 +92,26 @@ exports.register = async (req, res) => {
       })
     }
 
+    let locationData
+
+    if (role === "DOCTOR") {
+      const { lat, lng } = await geocodeCity(city)
+
+      locationData = {
+        type: "Point",
+        coordinates: [lng, lat]
+      }
+    }
+
+    if (role === "PATIENT") {
+      delete req.body.location
+    }
+
+    const normalizedSpeciality =
+      role === "DOCTOR"
+        ? speciality.trim().toLowerCase()
+        : undefined
+
     const user = await User.create({
       role,
       name,
@@ -64,9 +121,12 @@ exports.register = async (req, res) => {
       gender,
       dob,
       fee: role === "DOCTOR" ? fee : undefined,
-      speciality: role === "DOCTOR" ? speciality : undefined,
-      location: role === "DOCTOR" ? location : undefined
+      speciality: normalizedSpeciality,
+      city: role === "DOCTOR" ? city : undefined,
+      address: role === "DOCTOR" ? address : undefined,
+      location: role === "DOCTOR" ? locationData : undefined
     })
+
 
     const accessToken = generateAccessToken(user)
     const refreshToken = generateRefreshToken(user)
