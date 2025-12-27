@@ -29,12 +29,15 @@ import androidx.navigation.NavController
 import com.example.frontened.data.dto.LoginRequestData
 import com.example.frontened.presentation.components.CustomTextField
 import com.example.frontened.presentation.navigation.AppRoutes
+import com.example.frontened.utils.JwtUtils
+import com.example.frontened.utils.TokenManager
 
 
 @Composable
 fun LoginScreen(
     navController: NavController,
-    viewModel: LoginViewModel = hiltViewModel()
+    viewModel: LoginViewModel = hiltViewModel(),
+    tokenManager: TokenManager
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsState()
@@ -91,10 +94,35 @@ fun LoginScreen(
         }
     }
 
-    state.message?.let {
-        Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-        navController.navigate(AppRoutes.PatientScreen.route) {
-            popUpTo(AppRoutes.Login.route) { inclusive = true }
+//    state.message?.let {
+//        navController.navigate(AppRoutes.PatientScreen.route){
+//            popUpTo(AppRoutes.Login.route){ inclusive = true}
+//        }
+//    }
+
+    LaunchedEffect(state.message) {
+        if (state.message != null) {
+
+            val token = tokenManager.getAccessToken()
+            val role = token?.let { JwtUtils.getRole(it) }
+
+            when (role) {
+                "PATIENT" -> {
+                    navController.navigate(AppRoutes.PatientScreen.route) {
+                        popUpTo(AppRoutes.Login.route) { inclusive = true }
+                    }
+                }
+
+                "DOCTOR" -> {
+                    navController.navigate(AppRoutes.DoctorDashBoard.route) {
+                        popUpTo(AppRoutes.Login.route) { inclusive = true }
+                    }
+                }
+
+                else -> {
+                    Toast.makeText(context, "Invalid role", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 
@@ -138,7 +166,6 @@ private fun LoginContent(
             verticalArrangement = Arrangement.Center
         ) {
 
-            // Logo Section with Medical Icon
             Card(
                 modifier = Modifier.size(100.dp),
                 shape = RoundedCornerShape(24.dp),
@@ -162,7 +189,7 @@ private fun LoginContent(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Welcome Text
+
             Text(
                 text = "Welcome Back",
                 style = MaterialTheme.typography.headlineLarge,
@@ -182,7 +209,7 @@ private fun LoginContent(
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            // Login Form Card
+
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -203,7 +230,7 @@ private fun LoginContent(
                         color = MaterialTheme.colorScheme.onSurface
                     )
 
-                    // Email Field
+
                     CustomTextField(
                         value = email,
                         onValueChange = { email = it },
@@ -214,7 +241,7 @@ private fun LoginContent(
                         color = MaterialTheme.colorScheme.onSurface
                     )
 
-                    // Password Field
+
                     CustomTextField(
                         value = password,
                         onValueChange = { password = it },
@@ -225,7 +252,7 @@ private fun LoginContent(
                         color = MaterialTheme.colorScheme.onSurface
                     )
 
-                    // Forgot Password
+
                     TextButton(
                         onClick = { /* Handle forgot password */ },
                         modifier = Modifier.align(Alignment.End)
@@ -238,7 +265,6 @@ private fun LoginContent(
                         )
                     }
 
-                    // Login Button
                     Button(
                         onClick = { onLoginClick(email, password) },
                         modifier = Modifier
@@ -270,7 +296,7 @@ private fun LoginContent(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Sign Up Section
+
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -318,7 +344,7 @@ private fun LoginContent(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Footer
+
             Row(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,

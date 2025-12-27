@@ -28,12 +28,15 @@ import androidx.navigation.NavController
 import com.example.frontened.data.dto.RegisterRequestDto
 import com.example.frontened.presentation.components.CustomTextField
 import com.example.frontened.presentation.navigation.AppRoutes
+import com.example.frontened.utils.JwtUtils
+import com.example.frontened.utils.TokenManager
 
 
 @Composable
 fun SignUpScreen(
     viewModel: SignUpViewModel = hiltViewModel(),
-    navController: NavController
+    navController: NavController,
+    tokenManager: TokenManager
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
@@ -47,6 +50,8 @@ fun SignUpScreen(
     var fee by rememberSaveable { mutableStateOf("") }
     var speciality by rememberSaveable { mutableStateOf("") }
     var location by rememberSaveable { mutableStateOf("") }
+    var gender by rememberSaveable { mutableStateOf("") }
+    var dob by rememberSaveable { mutableStateOf("") }
 
     Box(
         modifier = Modifier
@@ -204,6 +209,50 @@ fun SignUpScreen(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         color = MaterialTheme.colorScheme.onSurface
                     )
+
+                    // Gender Selection
+                    Column {
+                        Text(
+                            text = "Gender",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF424242)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            GenderOption(
+                                text = "Male",
+                                selected = gender == "Male",
+                                modifier = Modifier.weight(1f)
+                            ) { gender = "Male" }
+
+                            GenderOption(
+                                text = "Female",
+                                selected = gender == "Female",
+                                modifier = Modifier.weight(1f)
+                            ) { gender = "Female" }
+
+                            GenderOption(
+                                text = "Other",
+                                selected = gender == "Other",
+                                modifier = Modifier.weight(1f)
+                            ) { gender = "Other" }
+                        }
+                    }
+
+                    CustomTextField(
+                        value = dob,
+                        onValueChange = { dob = it },
+                        label = "Date of Birth (YYYY-MM-DD)",
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        leadingIcon = Icons.Default.DateRange,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                 }
             }
 
@@ -283,6 +332,8 @@ fun SignUpScreen(
                         email.isEmpty() ||
                         phone.isEmpty() ||
                         password.isEmpty() ||
+                        gender.isEmpty() ||
+                        dob.isEmpty() ||
                         (role == "DOCTOR" &&
                                 (fee.isEmpty() || speciality.isEmpty() || location.isEmpty()))
                     ) {
@@ -298,7 +349,9 @@ fun SignUpScreen(
                             email = email,
                             mobileNumber = phone,
                             password = password,
-                            fee = if (role == "DOCTOR") fee.toInt() else null,
+                            gender = gender,
+                            dob = dob,
+                            fee = if (role == "DOCTOR") fee.toIntOrNull() else null,
                             speciality = if (role == "DOCTOR") speciality else null,
                             location = if (role == "DOCTOR") location else null
                         )
@@ -368,15 +421,61 @@ fun SignUpScreen(
         }
     }
 
-    state.message?.let {
-        Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-        navController.navigate(AppRoutes.PatientScreen.route){
-            popUpTo(AppRoutes.SignUp.route) { inclusive = true }
+    LaunchedEffect(state.message) {
+        if (state.message != null) {
+
+            Toast.makeText(
+                context,
+                state.message,
+                Toast.LENGTH_SHORT
+            ).show()
+
+            val token = tokenManager.getAccessToken()
+            val role = token?.let { JwtUtils.getRole(it) }
+
+            when (role) {
+                "PATIENT" -> {
+                    navController.navigate(AppRoutes.PatientScreen.route) {
+                        popUpTo(AppRoutes.SignUp.route) { inclusive = true }
+                    }
+                }
+
+                "DOCTOR" -> {
+                    navController.navigate(AppRoutes.DoctorDashBoard.route) {
+                        popUpTo(AppRoutes.SignUp.route) { inclusive = true }
+                    }
+                }
+
+                else -> {
+                    Toast.makeText(
+                        context,
+                        "Invalid role",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
         }
+        viewModel.clearState()
     }
 
-    state.error?.let {
-        Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+
+    state.error?.let { error ->
+        LaunchedEffect(error) {
+            val userFriendlyMessage = when {
+                error.contains("User already registered") ||
+                        error.contains("already exists") ->
+                    "This email or phone number is already registered. Please use different details or try logging in."
+                error.contains("400") ->
+                    "Invalid input. Please check your details."
+                error.contains("500") ->
+                    "Server error. Please try again later."
+                error.contains("Network") || error.contains("Unable to resolve host") ->
+                    "Network error. Please check your internet connection."
+                else -> error
+            }
+            Toast.makeText(context, userFriendlyMessage, Toast.LENGTH_LONG).show()
+        }
+
     }
 }
 
@@ -423,6 +522,36 @@ private fun RoleOption(
                 color = if (selected) Color.White else Color(0xFF424242),
                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
                 fontSize = 14.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun GenderOption(
+    text: String,
+    selected: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = modifier
+            .height(48.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(8.dp),
+        color = if (selected) Color(0xFF1976D2) else Color(0xFFF5F5F5),
+        border = if (selected) null else androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE0E0E0))
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Text(
+                text = text,
+                fontSize = 14.sp,
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                color = if (selected) Color.White else Color(0xFF424242),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
         }
     }
