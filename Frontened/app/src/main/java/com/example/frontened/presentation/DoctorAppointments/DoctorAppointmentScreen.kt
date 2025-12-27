@@ -81,6 +81,7 @@ fun DoctorAppointmentsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .padding(bottom = 75.dp)
                 .background(backgroundColor)
         ) {
             when (state) {
