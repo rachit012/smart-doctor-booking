@@ -93,7 +93,7 @@ fun MainNavigation(startScreen: String, locationProvider: LocationProvider, toke
             }
 
             composable(AppRoutes.DoctorDashBoard.route) {
-                DoctorDashboardScreen(navController)
+                DoctorDashboardScreen(navController = navController, tokenManager = tokenManager)
             }
 
             composable(AppRoutes.MyAppointment.route) {

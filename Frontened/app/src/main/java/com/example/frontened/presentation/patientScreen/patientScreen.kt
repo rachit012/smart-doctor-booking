@@ -63,7 +63,7 @@ fun patientScreen(
             locationFetched = true
             locationProvider.getLastLocation { lat, lng ->
                 Log.d("PATIENT_DASH", "Location: $lat , $lng")
-                viewModel.loadNearbyDoctors(lat, lng)
+                viewModel.loadNearbyDoctors(lat, lng, 1000)
             }
         }
     }

@@ -33,8 +33,9 @@ class AuthRepoImpl @Inject constructor(
 
         try {
             val response = api.registerUser(request)
-
-            if (response.success) {
+            Log.d("AUTH_REPO", "Response: success=${response.success}, message=${response.message}")
+            if (response.success && response.data != null) {
+                tokenManager.saveAccessToken(response.data.accessToken)
                 emit(ResultState.Success(response.message))
             } else {
                 emit(ResultState.Error(response.message))
@@ -44,9 +45,12 @@ class AuthRepoImpl @Inject constructor(
             throw e
 
         } catch (e: HttpException) {
-            emit(ResultState.Error("Server Error: ${e.code()}"))
+            val errorBody = e.response()?.errorBody()?.string()
+            Log.e("AUTH_REPO", "HTTP Error: ${e.code()}, Body: $errorBody")
+            emit(ResultState.Error("Server Error: ${e.code()} - $errorBody"))
 
         } catch (e: Exception) {
+            Log.e("AUTH_REPO", "Exception: ${e.message}", e)
             emit(ResultState.Error(e.localizedMessage ?: "Something went wrong"))
         }
     }
@@ -91,13 +95,14 @@ class AuthRepoImpl @Inject constructor(
 
     override fun fetchNearbyDoctors(
         lat: Double,
-        lng: Double
+        lng: Double,
+        distance: Int
     ): Flow<ResultState<List<DoctorDto>>> = flow {
         emit(ResultState.Loading)
 
 
         try {
-            val response = api.getNearbyDoctors(lat, lng)
+            val response = api.getNearbyDoctors(lat, lng, distance)
 
             if (response.success) {
                 emit(ResultState.Success(response.data))
@@ -132,6 +137,7 @@ class AuthRepoImpl @Inject constructor(
         doctorId: String,
         date: String
     ): Flow<ResultState<List<SlotDto>>> = flow {
+
         emit(ResultState.Loading)
 
         try {
@@ -140,17 +146,11 @@ class AuthRepoImpl @Inject constructor(
             if (response.success && response.data != null) {
                 emit(ResultState.Success(response.data.slots))
             } else {
-                emit(ResultState.Error(response.message ))
+                emit(ResultState.Success(emptyList()))
             }
 
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: HttpException) {
-            emit(ResultState.Error("Server error: ${e.code()}"))
         } catch (e: Exception) {
-            emit(ResultState.Error(e.localizedMessage ?: "Something went wrong"))
+            emit(ResultState.Error(e.message ?: "Something went wrong"))
         }
     }
-
-
 }

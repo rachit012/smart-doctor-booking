@@ -166,6 +166,7 @@ private fun LoginContent(
             verticalArrangement = Arrangement.Center
         ) {
 
+            // Logo Section with Medical Icon
             Card(
                 modifier = Modifier.size(100.dp),
                 shape = RoundedCornerShape(24.dp),
@@ -189,7 +190,7 @@ private fun LoginContent(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-
+            // Welcome Text
             Text(
                 text = "Welcome Back",
                 style = MaterialTheme.typography.headlineLarge,
@@ -209,7 +210,7 @@ private fun LoginContent(
 
             Spacer(modifier = Modifier.height(40.dp))
 
-
+            // Login Form Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -230,7 +231,7 @@ private fun LoginContent(
                         color = MaterialTheme.colorScheme.onSurface
                     )
 
-
+                    // Email Field
                     CustomTextField(
                         value = email,
                         onValueChange = { email = it },
@@ -241,7 +242,7 @@ private fun LoginContent(
                         color = MaterialTheme.colorScheme.onSurface
                     )
 
-
+                    // Password Field
                     CustomTextField(
                         value = password,
                         onValueChange = { password = it },
@@ -252,7 +253,7 @@ private fun LoginContent(
                         color = MaterialTheme.colorScheme.onSurface
                     )
 
-
+                    // Forgot Password
                     TextButton(
                         onClick = { /* Handle forgot password */ },
                         modifier = Modifier.align(Alignment.End)
@@ -265,6 +266,7 @@ private fun LoginContent(
                         )
                     }
 
+                    // Login Button
                     Button(
                         onClick = { onLoginClick(email, password) },
                         modifier = Modifier
@@ -296,7 +298,7 @@ private fun LoginContent(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-
+            // Sign Up Section
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -344,7 +346,7 @@ private fun LoginContent(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-
+            // Footer
             Row(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,

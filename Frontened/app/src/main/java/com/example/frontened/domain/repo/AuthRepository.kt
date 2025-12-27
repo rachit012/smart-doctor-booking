@@ -19,7 +19,8 @@ interface AuthRepository {
 
     fun fetchNearbyDoctors(
         lat: Double,
-        lng: Double
+        lng: Double,
+        distance: Int
     ): Flow<ResultState<List<DoctorDto>>>
 
     suspend fun addAvailability(

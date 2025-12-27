@@ -1,6 +1,7 @@
 package com.example.frontened.presentation.patientScreen
 
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
@@ -58,27 +59,33 @@ fun DoctorDetailScreen(
         return
     }
 
+    Log.d("DOCTOR_UI", "doctor = $doctor")
+    LaunchedEffect(Unit) {
+        Log.d("DOCTOR_UI", "doctorId = ${doctor.id}")
+    }
+
+
     val context = LocalContext.current
     val availabilityState by viewModel.state1.collectAsState()
     val bookingState by viewModel.bookingState.collectAsState()
 
 
-
+    // Doctor location
     val doctorLat = doctor.location.coordinates[1]
     val doctorLng = doctor.location.coordinates[0]
 
-
+    // Patient location state
     var patientLat by remember { mutableStateOf<Double?>(null) }
     var patientLng by remember { mutableStateOf<Double?>(null) }
 
-
+    // Selected time slot and date
     var selectedTimeSlot by remember { mutableStateOf<SlotDto?>(null) }
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
 
-
+    // Show confirmation dialog
     var showConfirmDialog by remember { mutableStateOf(false) }
 
-
+    // Permission state
     var hasPermission by remember { mutableStateOf(false) }
 
     if (!hasPermission) {
@@ -96,13 +103,29 @@ fun DoctorDetailScreen(
         }
     }
 
+    // Load availability when date changes
 
-    LaunchedEffect(selectedDate) {
-        viewModel.loadAvailability(
-            doctorId = doctor.id,
-            date = selectedDate.toString()
-        )
+    LaunchedEffect(selectedDate, doctor.id) {
+        doctor.id?.let { id ->
+            Log.d(
+                "AVAILABILITY_UI",
+                "Calling API with doctorId=${doctor.id}, date=$selectedDate"
+            )
+            viewModel.loadAvailability(
+                doctorId = id,
+                date = selectedDate.toString()
+            )
+        }
     }
+//    LaunchedEffect(selectedDate) {
+//        val doctorId = doctor.id
+//        if (!doctor.id.isNullOrBlank()) {
+//            viewModel.loadAvailability(
+//                doctorId = doctorId,
+//                date = selectedDate.toString()
+//            )
+//        }
+//    }
 
 
 
@@ -112,20 +135,28 @@ fun DoctorDetailScreen(
 
             is ResultState.Success -> {
 
+
                 NotificationHelper.showAppointmentBooked(
                     context = context,
                     doctorName = doctor.name,
                     date = selectedDate.toString(),
-                    time = selectedTimeSlot.toString() ?: ""
+                    time = selectedTimeSlot.toString() ?: "",
+                    routeUrl = buildGoogleMapsRouteUrl(
+                        srcLat = patientLat!!,
+                        srcLng = patientLng!!,
+                        destLat = doctorLat,
+                        destLng = doctorLng
+                    )
                 )
 
 
+                // ✅ Close dialog & reset UI
                 showConfirmDialog = false
                 selectedTimeSlot = null
 
-
+                // 🔄 Reload availability
                 viewModel.loadAvailability(
-                    doctor.id,
+                    doctor.id?:"",
                     selectedDate.toString()
                 )
             }
@@ -176,7 +207,7 @@ fun DoctorDetailScreen(
         LazyColumn(
             modifier = Modifier.fillMaxSize()
         ) {
-
+            // Header with Back Button
             item {
                 Box(
                     modifier = Modifier
@@ -210,7 +241,7 @@ fun DoctorDetailScreen(
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
-
+            // Doctor Profile Card
             item {
                 Card(
                     modifier = Modifier
@@ -226,7 +257,7 @@ fun DoctorDetailScreen(
                         modifier = Modifier.padding(20.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-
+                        // Avatar
                         Box(
                             modifier = Modifier
                                 .size(100.dp)
@@ -282,7 +313,7 @@ fun DoctorDetailScreen(
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
-
+            // Contact Information Card
             item {
                 Card(
                     modifier = Modifier
@@ -321,7 +352,7 @@ fun DoctorDetailScreen(
 
                         Divider(color = Color(0xFFE0E0E0))
 
-
+                        // Map Button
                         Button(
                             modifier = Modifier.fillMaxWidth(),
                             enabled = patientLat != null && patientLng != null,
@@ -361,7 +392,7 @@ fun DoctorDetailScreen(
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
-
+            // Date Selection Card
             item {
                 Card(
                     modifier = Modifier
@@ -400,7 +431,7 @@ fun DoctorDetailScreen(
                             selectedDate = selectedDate,
                             onDateSelected = {
                                 selectedDate = it
-                                selectedTimeSlot = null
+                                selectedTimeSlot = null // Reset slot when date changes
                             }
                         )
                     }
@@ -409,7 +440,7 @@ fun DoctorDetailScreen(
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
-
+            // Appointment Booking Section
             item {
                 Card(
                     modifier = Modifier
@@ -452,7 +483,7 @@ fun DoctorDetailScreen(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-
+                        // Time Slots Grid
                         when (availabilityState) {
                             is ResultState.Loading -> {
                                 Box(
@@ -492,8 +523,7 @@ fun DoctorDetailScreen(
                             }
 
                             is ResultState.Success -> {
-                                val slots =
-                                    (availabilityState as ResultState.Success<List<SlotDto>>).data
+                                val slots = (availabilityState as ResultState.Success<List<SlotDto>>).data
 
                                 if (slots.isEmpty()) {
                                     Box(
@@ -554,7 +584,7 @@ fun DoctorDetailScreen(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-
+                        // Book Appointment Button
                         Button(
                             modifier = Modifier.fillMaxWidth(),
                             enabled = selectedTimeSlot != null && selectedTimeSlot?.isBooked == false,
@@ -590,7 +620,7 @@ fun DoctorDetailScreen(
             item { Spacer(modifier = Modifier.height(24.dp)) }
         }
 
-
+        // Confirmation Dialog
         if (showConfirmDialog && selectedTimeSlot != null) {
             AlertDialog(
                 onDismissRequest = { showConfirmDialog = false },
@@ -699,12 +729,14 @@ fun DoctorDetailScreen(
                 confirmButton = {
                     Button(
                         onClick = {
-                            viewModel.bookAppointment(
-                                doctorId = doctor.id,
-                                date = selectedDate.toString(),
-                                startTime = selectedTimeSlot!!.startTime,
-                                endTime = selectedTimeSlot!!.endTime
-                            )
+                            if (selectedTimeSlot != null && !doctor.id.isNullOrBlank()) {
+                                viewModel.bookAppointment(
+                                    doctorId = doctor.id,
+                                    date = selectedDate.toString(),
+                                    startTime = selectedTimeSlot!!.startTime,
+                                    endTime = selectedTimeSlot!!.endTime
+                                )
+                            }
 //                            showConfirmDialog = false
 //                            selectedTimeSlot = null
                             // Reload availability to reflect the booking
