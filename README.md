@@ -1,5 +1,8 @@
 # Smart Doctor Booking 
 
+- Apk link is in the release section.
+- Manual and Automated API testing in done, files are in the repository.
+
 ## Authentication
 - Patient registration and login
 - Doctor registration and login
