@@ -1,5 +1,7 @@
 package com.example.frontened.presentation.navigation
 
+
+
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.material3.Scaffold
@@ -87,7 +89,7 @@ fun MainNavigation(startScreen: String, locationProvider: LocationProvider, toke
             }
 
             composable(AppRoutes.ProfileScreen.route) {
-                ProfileScreen(navController, tokenManager = tokenManager)
+                ProfileScreen(navController)
             }
 
             composable(AppRoutes.DoctorDashBoard.route) {

@@ -26,6 +26,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.frontened.common.ResultState
 import com.example.frontened.data.dto.DoctorDto
+import com.example.frontened.presentation.Auth.AuthViewModel
 import com.example.frontened.presentation.navigation.AppRoutes
 import com.example.frontened.utils.LocationProvider
 import com.example.frontened.utils.RequestLocationPermission
@@ -36,6 +37,7 @@ import com.example.frontened.utils.RequireGpsEnabled
 fun patientScreen(
     navController: NavController,
     viewModel: PatientViewModel = hiltViewModel(),
+    authViewModel: AuthViewModel = hiltViewModel(),
     locationProvider: LocationProvider
 ) {
     var hasPermission by remember { mutableStateOf(false) }
@@ -82,14 +84,16 @@ fun patientScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
 
-
+            // Header Section
             HeaderSection(
                 searchQuery = searchQuery,
                 onSearchQueryChange = { searchQuery = it },
                 onLogoutClick = {
-
+                    // Handle logout
+                    authViewModel.logout()
                     navController.navigate(AppRoutes.Login.route) {
-                        popUpTo(0) { inclusive = true }
+                        popUpTo(0)
+                        launchSingleTop = true
                     }
                 }
             )
@@ -228,7 +232,7 @@ fun HeaderSection(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-
+            // Search Bar
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = onSearchQueryChange,
@@ -361,7 +365,7 @@ fun DoctorItem(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-
+            // Doctor Avatar
             Box(
                 modifier = Modifier
                     .size(64.dp)
@@ -379,7 +383,7 @@ fun DoctorItem(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-
+            // Doctor Info
             Column(
                 modifier = Modifier.weight(1f)
             ) {
@@ -438,7 +442,7 @@ fun DoctorItem(
                 }
             }
 
-
+            // Arrow Icon
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = null,
