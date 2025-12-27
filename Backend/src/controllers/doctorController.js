@@ -78,6 +78,10 @@ exports.getNearbyDoctors = async (req, res) => {
       distance: Number((doc.distance / 1000).toFixed(2))
     }))
 
+    const shuffledDoctors = formattedDoctors.sort(
+      () => Math.random() - 0.5
+    )
+    
     res.json({
       success: true,
       data: formattedDoctors
