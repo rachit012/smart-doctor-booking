@@ -19,4 +19,9 @@ interface AppointmentApi {
 
     @GET("api/appointments/doctor")
     suspend fun getDoctorAppointments(): DoctorAppointmentResponse
+
+    @PATCH("api/appointments/cancel/{id}")
+    suspend fun cancelAppointment(
+        @Path("id") appointmentId: String
+    ): ApiResponse<AppointmentDto>
 }

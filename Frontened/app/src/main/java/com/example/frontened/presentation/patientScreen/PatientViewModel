@@ -17,13 +17,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.example.frontened.data.dto.DoctorAvailabilityDto
+import com.example.frontened.domain.UseCase.CancelAppointmentUseCase
 
 
 @HiltViewModel
 class PatientViewModel @Inject constructor(
     private val nearbyDoctorUseCase: NearbyDoctorUseCase,
     private val repo: AuthRepoImpl,
-    private val appointmentRepo: AppointmentRepository
+    private val appointmentRepo: AppointmentRepository,
+    private val cancelAppointmentUseCase: CancelAppointmentUseCase
 ) : ViewModel() {
 
     private val _state =
@@ -95,6 +97,21 @@ class PatientViewModel @Inject constructor(
         viewModelScope.launch {
             appointmentRepo.getMyAppointments()
                 .collect { _appointmentsState.value = it }
+        }
+    }
+
+    private val _cancelState = MutableStateFlow<ResultState<String>?>(null)
+    val cancelState: StateFlow<ResultState<String>?> = _cancelState
+
+    fun cancelAppointment(id: String) {
+        viewModelScope.launch {
+            cancelAppointmentUseCase(id).collect {
+                _cancelState.value = it
+
+                if (it is ResultState.Success) {
+                    loadMyAppointments()
+                }
+            }
         }
     }
 

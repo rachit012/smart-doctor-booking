@@ -29,6 +29,7 @@ import androidx.navigation.NavController
 import com.example.frontened.common.ResultState
 import com.example.frontened.data.dto.DoctorDto
 import com.example.frontened.data.dto.SlotDto
+import com.example.frontened.utils.AppointmentReminderScheduler
 import com.example.frontened.utils.LocationProvider
 import com.example.frontened.utils.NotificationHelper
 import com.example.frontened.utils.RequestLocationPermission
@@ -38,6 +39,7 @@ import com.example.frontened.utils.openGoogleMaps
 
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneId
 
 
@@ -159,6 +161,17 @@ fun DoctorDetailScreen(
                     doctorName = doctor.name,
                     date = selectedDate.toString(),
                     time = selectedTimeSlot!!.startTime,
+                    routeUrl = routeUrl
+                )
+
+                val appointmentDateTime = LocalDateTime.parse(
+                    "${selectedDate}T${selectedTimeSlot!!.startTime}"
+                )
+
+                AppointmentReminderScheduler.scheduleOneHourBefore(
+                    context = context,
+                    appointmentDateTime = appointmentDateTime,
+                    doctorName = doctor.name,
                     routeUrl = routeUrl
                 )
 

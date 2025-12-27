@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.frontened.common.ResultState
 import com.example.frontened.data.dto.AppointmentDto
@@ -87,6 +88,7 @@ fun PatientAppointmentScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .padding(bottom = 75.dp)
                 .background(backgroundColor)
         ) {
             when (state) {
@@ -111,7 +113,8 @@ fun PatientAppointmentScreen(
                         AppointmentsList(
                             appointments = appointments,
                             primaryColor = primaryBlue,
-                            accentColor = accentPurple
+                            accentColor = accentPurple,
+                            viewModel
                         )
                     }
                 }
@@ -124,7 +127,8 @@ fun PatientAppointmentScreen(
 fun AppointmentsList(
     appointments: List<AppointmentDto>,
     primaryColor: Color,
-    accentColor: Color
+    accentColor: Color,
+    viewModel: PatientViewModel = hiltViewModel()
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -151,7 +155,10 @@ fun AppointmentsList(
         items(appointments) { appointment ->
             AppointmentItem(
                 appointment = appointment,
-                primaryColor = primaryColor
+                primaryColor = primaryColor,
+                onCancelClick = { appointmentId ->
+                    viewModel.cancelAppointment(appointmentId)
+                }
             )
         }
     }
@@ -202,19 +209,8 @@ fun SummaryCard(
                     thickness = 1.dp
                 )
 
-                SummaryItem(
-                    label = "Upcoming",
-                    value = upcomingCount.toString(),
-                    icon = Icons.Default.Schedule
-                )
 
-                VerticalDivider(
-                    modifier = Modifier
-                        .height(60.dp)
-                        .padding(horizontal = 8.dp),
-                    color = Color.White.copy(alpha = 0.3f),
-                    thickness = 1.dp
-                )
+
 
                 SummaryItem(
                     label = "Completed",
@@ -259,7 +255,8 @@ fun SummaryItem(
 @Composable
 fun AppointmentItem(
     appointment: AppointmentDto,
-    primaryColor: Color
+    primaryColor: Color,
+    onCancelClick: (String) -> Unit
 ) {
     val statusColor = when (appointment.status.uppercase()) {
         "PENDING" -> Color(0xFFFFA726)
@@ -398,29 +395,32 @@ fun AppointmentItem(
             }
 
             // Action button for confirmed appointments
-            if (appointment.status.equals("CONFIRMED", ignoreCase = true)) {
+            // Action button for cancellable appointments
+            if (appointment.status.equals("BOOKED", ignoreCase = true)) {
                 Spacer(modifier = Modifier.height(12.dp))
 
                 OutlinedButton(
-                    onClick = { /* Handle view details */ },
+                    onClick = { onCancelClick(appointment._id) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = primaryColor
-                    ),
-                    border = ButtonDefaults.outlinedButtonBorder.copy(
-                        width = 1.dp
+                        contentColor = Color.Red
                     )
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Visibility,
-                        contentDescription = null,
+                        imageVector = Icons.Default.Cancel,
+                        contentDescription = "Cancel Appointment",
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("View Details", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                    Text(
+                        text = "Cancel Appointment",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
+                    )
                 }
             }
+
         }
     }
 }

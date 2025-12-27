@@ -15,4 +15,6 @@ interface AppointmentRepository {
     fun getMyAppointments(): Flow<ResultState<List<AppointmentDto>>>
 
     fun getDoctorAppointments(): Flow<ResultState<List<DoctorAppointmentDto>>>
+
+    fun cancelAppointment(id: String): Flow<ResultState<String>>
 }
