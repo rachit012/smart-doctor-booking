@@ -16,4 +16,7 @@ interface AppointmentApi {
 
     @GET("api/appointments/my")
     suspend fun getMyAppointments(): ApiResponse<List<AppointmentDto>>
+
+    @GET("api/appointments/doctor")
+    suspend fun getDoctorAppointments(): DoctorAppointmentResponse
 }
