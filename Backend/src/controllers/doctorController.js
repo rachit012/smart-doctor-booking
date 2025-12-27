@@ -36,7 +36,7 @@ exports.getDoctorsBySpeciality = async (req, res) => {
 
 exports.getNearbyDoctors = async (req, res) => {
   try {
-    const { lat, lng, distance = 5, speciality } = req.query
+    const { lat, lng, distance = 1000, speciality } = req.query
 
     if (!lat || !lng) {
       return res.status(400).json({
