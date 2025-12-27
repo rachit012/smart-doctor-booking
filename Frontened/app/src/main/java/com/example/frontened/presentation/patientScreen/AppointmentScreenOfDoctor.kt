@@ -32,7 +32,10 @@ import com.example.frontened.data.dto.SlotDto
 import com.example.frontened.utils.LocationProvider
 import com.example.frontened.utils.NotificationHelper
 import com.example.frontened.utils.RequestLocationPermission
+import com.example.frontened.utils.buildGoogleMapsRouteUrl
+
 import com.example.frontened.utils.openGoogleMaps
+
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -135,19 +138,37 @@ fun DoctorDetailScreen(
 
             is ResultState.Success -> {
 
+//                val routeUrl =  openGoogleMaps(
+//                    context = context,
+//                    patientLat = patientLat!!,
+//                    patientLng = patientLng!!,
+//                    doctorLat = doctorLat,
+//                    doctorLng = doctorLng
+//                )
+
+
+                val routeUrl = buildGoogleMapsRouteUrl(
+                    patientLat = patientLat!!,
+                    patientLng = patientLng!!,
+                    doctorLat = doctorLat,
+                    doctorLng = doctorLng
+                )
 
                 NotificationHelper.showAppointmentBooked(
                     context = context,
                     doctorName = doctor.name,
                     date = selectedDate.toString(),
-                    time = selectedTimeSlot.toString() ?: "",
-                    routeUrl = buildGoogleMapsRouteUrl(
-                        srcLat = patientLat!!,
-                        srcLng = patientLng!!,
-                        destLat = doctorLat,
-                        destLng = doctorLng
-                    )
+                    time = selectedTimeSlot!!.startTime,
+                    routeUrl = routeUrl
                 )
+
+//                NotificationHelper.showAppointmentBooked(
+//                    context = context,
+//                    doctorName = doctor.name,
+//                    date = selectedDate.toString(),
+//                    time = "${selectedTimeSlot!!.startTime}",
+//                    route = routeUrl
+//                )
 
 
                 // ✅ Close dialog & reset UI
@@ -357,13 +378,26 @@ fun DoctorDetailScreen(
                             modifier = Modifier.fillMaxWidth(),
                             enabled = patientLat != null && patientLng != null,
                             onClick = {
-                                openGoogleMaps(
-                                    context = context,
+
+                                val routeUrl = buildGoogleMapsRouteUrl(
                                     patientLat = patientLat!!,
                                     patientLng = patientLng!!,
                                     doctorLat = doctorLat,
                                     doctorLng = doctorLng
                                 )
+
+                                openGoogleMaps(context, routeUrl)
+
+
+//                                openGoogleMaps(
+//                                    context = context,
+//                                    patientLat = patientLat!!,
+//                                    patientLng = patientLng!!,
+//                                    doctorLat = doctorLat,
+//                                    doctorLng = doctorLng
+//                                )
+
+
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color(0xFF1976D2),
