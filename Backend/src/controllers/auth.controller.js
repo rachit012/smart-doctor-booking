@@ -1,6 +1,7 @@
 const User = require("../models/User")
 const jwt = require("jsonwebtoken")
 const bcrypt = require("bcryptjs")
+const fetch = require("node-fetch")
 
 const generateAccessToken = (user) => {
   return jwt.sign(
@@ -18,6 +19,23 @@ const generateRefreshToken = (user) => {
   )
 }
 
+const geocodeCity = async (city) => {
+  const response = await fetch(
+    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`
+  )
+
+  const data = await response.json()
+
+  if (!data.length) {
+    throw new Error("Invalid city name")
+  }
+
+  return {
+    lat: Number(data[0].lat),
+    lng: Number(data[0].lon)
+  }
+}
+
 exports.register = async (req, res) => {
   try {
     const {
@@ -30,7 +48,8 @@ exports.register = async (req, res) => {
       dob,
       fee,
       speciality,
-      location
+      city,
+      address
     } = req.body
 
     if (!role || !name || !email || !mobileNumber || !password) {
@@ -40,7 +59,7 @@ exports.register = async (req, res) => {
       })
     }
 
-    if (role === "DOCTOR" && (!fee || !speciality || !location)) {
+    if (role === "DOCTOR" && (!fee || !speciality || !city)) {
       return res.status(400).json({
         success: false,
         message: "Doctor must provide fee, speciality and location"
@@ -55,6 +74,21 @@ exports.register = async (req, res) => {
       })
     }
 
+    let locationData
+
+    if (role === "DOCTOR") {
+      const { lat, lng } = await geocodeCity(city)
+
+      locationData = {
+        type: "Point",
+        coordinates: [lng, lat]
+      }
+    }
+
+    if (role === "PATIENT") {
+      delete req.body.location
+    }
+
     const user = await User.create({
       role,
       name,
@@ -65,8 +99,11 @@ exports.register = async (req, res) => {
       dob,
       fee: role === "DOCTOR" ? fee : undefined,
       speciality: role === "DOCTOR" ? speciality : undefined,
-      location: role === "DOCTOR" ? location : undefined
+      city: role === "DOCTOR" ? city : undefined,
+      address: role === "DOCTOR" ? address : undefined,
+      location: role === "DOCTOR" ? locationData : undefined
     })
+
 
     const accessToken = generateAccessToken(user)
     const refreshToken = generateRefreshToken(user)

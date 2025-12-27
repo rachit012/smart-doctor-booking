@@ -51,8 +51,7 @@ const userSchema = new mongoose.Schema(
     location: {
       type: {
         type: String,
-        enum: ["Point"],
-        default: "Point"
+        enum: ["Point"]
       },
       coordinates: {
         type: [Number],
@@ -60,6 +59,12 @@ const userSchema = new mongoose.Schema(
           return this.role === "DOCTOR"
         }
       }
+    },
+    city: {
+      type: String
+    },
+    address: {
+      type: String
     }
   },
   { timestamps: true }
