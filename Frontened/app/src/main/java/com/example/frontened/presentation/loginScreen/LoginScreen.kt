@@ -123,11 +123,14 @@ fun LoginScreen(
                     Toast.makeText(context, "Invalid role", Toast.LENGTH_SHORT).show()
                 }
             }
+
+            viewModel.clearState()
+
         }
     }
 
     state.error?.let {
-        Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, "Invalid Credentials", Toast.LENGTH_SHORT).show()
     }
 }
 
@@ -253,18 +256,7 @@ private fun LoginContent(
                         color = MaterialTheme.colorScheme.onSurface
                     )
 
-                    // Forgot Password
-                    TextButton(
-                        onClick = { /* Handle forgot password */ },
-                        modifier = Modifier.align(Alignment.End)
-                    ) {
-                        Text(
-                            text = "Forgot Password?",
-                            color = primaryColor,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
+
 
                     // Login Button
                     Button(
