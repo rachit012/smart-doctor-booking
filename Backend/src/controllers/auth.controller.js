@@ -1,7 +1,6 @@
 const User = require("../models/User")
 const jwt = require("jsonwebtoken")
 const bcrypt = require("bcryptjs")
-const fetch = require("node-fetch")
 
 const generateAccessToken = (user) => {
   return jwt.sign(
@@ -20,32 +19,40 @@ const generateRefreshToken = (user) => {
 }
 
 const geocodeCity = async (city) => {
-  const response = await fetch(
-    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`,
-    {
-      headers: {
-        "User-Agent": "Doctor-App/1.0 (contact: test@example.com)",
-        "Accept": "application/json"
-      }
-    }
-  )
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+      city
+    )}&format=json&limit=1`
 
-  if (!response.ok) {
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": "Veersa-Hackathon-Doctor-App/1.0 (contact: rachit.thakur@gmail.com)",
+        "Accept": "application/json",
+        "Referer": "http://localhost:5000"
+      }
+    })
+
+    console.log("Nominatim status:", response.status)
+
+    if (!response.ok) {
+      throw new Error(`Nominatim error: ${response.status}`)
+    }
+
+    const data = await response.json()
+
+    if (!data.length) {
+      throw new Error("Invalid city name")
+    }
+
+    return {
+      lat: Number(data[0].lat),
+      lng: Number(data[0].lon)
+    }
+  } catch (err) {
+    console.error("Geocoding failed:", err.message)
     throw new Error("Failed to fetch location data")
   }
-
-  const data = await response.json()
-
-  if (!data.length) {
-    throw new Error("Invalid city name")
-  }
-
-  return {
-    lat: Number(data[0].lat),
-    lng: Number(data[0].lon)
-  }
 }
-
 
 exports.register = async (req, res) => {
   try {
