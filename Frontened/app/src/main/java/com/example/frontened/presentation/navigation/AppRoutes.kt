@@ -23,4 +23,6 @@ sealed class AppRoutes(val route: String){
     object MyAppointment: AppRoutes("MyAppointment")
 
     object DoctorAppointmentScreen: AppRoutes("DoctorAppointmentScreen")
+
+    object AllDoctorScreen : AppRoutes("AllDoctors")
 }

@@ -1,12 +1,14 @@
+// ========== PATIENT HOME SCREEN ==========
 package com.example.frontened.presentation.patientScreen
 
-
-
+import android.annotation.SuppressLint
 import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,7 +21,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -32,7 +37,6 @@ import com.example.frontened.utils.LocationProvider
 import com.example.frontened.utils.RequestLocationPermission
 import com.example.frontened.utils.RequireGpsEnabled
 
-
 @Composable
 fun patientScreen(
     navController: NavController,
@@ -42,9 +46,7 @@ fun patientScreen(
 ) {
     var hasPermission by remember { mutableStateOf(false) }
     var locationFetched by remember { mutableStateOf(false) }
-
     var gpsEnabled by remember { mutableStateOf(false) }
-    var searchQuery by remember { mutableStateOf("") }
 
     if (!hasPermission) {
         RequestLocationPermission {
@@ -73,287 +75,453 @@ fun patientScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFFE3F2FD),
-                        Color(0xFFFFFFFF)
-                    )
-                )
-            )
-            .padding(bottom = 75.dp)
+            .background(Color(0xFFF5F5F5))
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        when (val result = state) {
+            is ResultState.Loading -> {
+                LoadingScreen()
+            }
 
-            // Header Section
-            HeaderSection(
-                searchQuery = searchQuery,
-                onSearchQueryChange = { searchQuery = it },
-                onLogoutClick = {
-                    // Handle logout
-                    authViewModel.logout()
-                    navController.navigate(AppRoutes.Login.route) {
-                        popUpTo(0)
-                        launchSingleTop = true
-                    }
-                }
-            )
+            is ResultState.Error -> {
+                ErrorScreen(error = result.message)
+            }
 
-
-            when (val result = state) {
-                is ResultState.Loading -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .weight(1f),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator(color = Color(0xFF1976D2))
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = "Finding nearby doctors...",
-                                color = Color(0xFF616161),
-                                fontSize = 14.sp
-                            )
+            is ResultState.Success -> {
+                PatientHomeContent(
+                    doctors = result.data,
+                    navController = navController,
+                    onLogoutClick = {
+                        authViewModel.logout()
+                        navController.navigate(AppRoutes.Login.route) {
+                            popUpTo(0)
+                            launchSingleTop = true
                         }
                     }
-                }
-
-                is ResultState.Error -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .weight(1f),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Card(
-                            shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = Color(0xFFFFEBEE)
-                            ),
-                            modifier = Modifier.padding(24.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(24.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Error,
-                                    contentDescription = null,
-                                    tint = Color(0xFFD32F2F),
-                                    modifier = Modifier.size(48.dp)
-                                )
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Text(
-                                    text = result.message,
-                                    color = Color(0xFF424242),
-                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                                )
-                            }
-                        }
-                    }
-                }
-
-                is ResultState.Success -> {
-                    val filteredDoctors = if (searchQuery.isBlank()) {
-                        result.data
-                    } else {
-                        result.data.filter { doctor ->
-                            doctor.name.contains(searchQuery, ignoreCase = true) ||
-                                    doctor.speciality.contains(searchQuery, ignoreCase = true)
-                        }
-                    }
-
-                    DoctorList(
-                        doctors = filteredDoctors,
-                        navController = navController
-                    )
-                }
+                )
             }
         }
     }
 }
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HeaderSection(
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit,
+fun PatientHomeContent(
+    doctors: List<DoctorDto>,
+    navController: NavController,
     onLogoutClick: () -> Unit
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp)
-        ) {
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                Column {
-                    Text(
-                        text = "Hello,",
-                        fontSize = 16.sp,
-                        color = Color(0xFF616161)
-                    )
-                    Text(
-                        text = "Welcome Back",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1565C0)
-                    )
-                }
-
-
-                IconButton(
-                    onClick = onLogoutClick,
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .background(Color(0xFFFFEBEE))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Logout,
-                        contentDescription = "Logout",
-                        tint = Color(0xFFD32F2F)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Search Bar
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = onSearchQueryChange,
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = {
-                    Text(
-                        text = "Search doctors or speciality...",
-                        color = Color(0xFF9E9E9E)
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = null,
-                        tint = Color(0xFF1976D2)
-                    )
-                },
-                trailingIcon = {
-                    if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { onSearchQueryChange("") }) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = "Clear",
-                                tint = Color(0xFF757575)
-                            )
-                        }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Column {
+                        Text(
+                            "Hello,",
+                            fontSize = 14.sp,
+                            color = Color.White.copy(alpha = 0.8f)
+                        )
+                        Text(
+                            "Welcome Back",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp
+                        )
                     }
                 },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF1976D2),
-                    unfocusedBorderColor = Color(0xFFE0E0E0),
-                    focusedContainerColor = Color(0xFFF5F5F5),
-                    unfocusedContainerColor = Color(0xFFF5F5F5)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFF1976D2),
+                    titleContentColor = Color.White
                 ),
-                shape = RoundedCornerShape(12.dp),
-                singleLine = true
+                actions = {
+                    IconButton(onClick = onLogoutClick) {
+                        Icon(
+                            imageVector = Icons.Default.Logout,
+                            contentDescription = "Logout",
+                            tint = Color.White
+                        )
+                    }
+                }
             )
         }
-    }
-}
-
-
-@Composable
-fun DoctorList(doctors: List<DoctorDto>, navController: NavController) {
-    if (doctors.isEmpty()) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(
-                    imageVector = Icons.Default.SearchOff,
-                    contentDescription = null,
-                    tint = Color(0xFFBDBDBD),
-                    modifier = Modifier.size(64.dp)
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "No doctors found",
-                    color = Color(0xFF757575),
-                    fontSize = 16.sp
-                )
-            }
-        }
-    } else {
+    ) { paddingValues ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(Color(0xFFF5F5F5)),
+            contentPadding = PaddingValues(bottom = 80.dp)
         ) {
+            // Hero Image Section
             item {
+                HeroImageSection()
+            }
+
+            // Featured Doctors Section
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 8.dp),
+                        .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Nearby Doctors",
+                        text = "Top Doctors",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF424242)
+                        color = Color(0xFF212121)
                     )
-                    Text(
-                        text = "${doctors.size} available",
-                        fontSize = 14.sp,
-                        color = Color(0xFF757575)
-                    )
+
+                    TextButton(
+                        onClick = {
+                            navController.navigate(AppRoutes.AllDoctorScreen.route)
+                        }
+                    ) {
+                        Text(
+                            "View All",
+                            color = Color(0xFF1976D2),
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Icon(
+                            imageVector = Icons.Default.ChevronRight,
+                            contentDescription = null,
+                            tint = Color(0xFF1976D2)
+                        )
+                    }
                 }
             }
 
-            items(doctors) { doctor ->
-                DoctorItem(
-                    doctor = doctor,
-                    navController = navController
-                )
+            // Top 3 Doctors Cards
+            item {
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(doctors.take(3)) { doctor ->
+                        FeaturedDoctorCard(
+                            doctor = doctor,
+                            onClick = {
+                                navController.currentBackStackEntry
+                                    ?.savedStateHandle
+                                    ?.set("doctor", doctor)
+
+                                navController.navigate(
+                                    AppRoutes.DoctorDetailScreen.createRoute(doctor.name)
+                                )
+                            }
+                        )
+                    }
+                }
+            }
+
+            // Quick Actions Section
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
+                QuickActionsSection(navController)
+            }
+
+            // Statistics
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
+                StatisticsSection(doctorCount = doctors.size)
             }
         }
     }
 }
 
-
 @Composable
-fun DoctorItem(
-    doctor: DoctorDto,
-    navController: NavController
-) {
+fun HeroImageSection() {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable {
-                navController.currentBackStackEntry
-                    ?.savedStateHandle
-                    ?.set("doctor", doctor)
-
-                navController.navigate(
-                    AppRoutes.DoctorDetailScreen.createRoute(doctor.name)
+            .padding(16.dp)
+            .height(200.dp),
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(
+                            Color(0xFF1976D2),
+                            Color(0xFF7B1FA2)
+                        )
+                    )
                 )
-            },
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        "Find Your",
+                        fontSize = 24.sp,
+                        color = Color.White,
+                        fontWeight = FontWeight.Light
+                    )
+                    Text(
+                        "Specialist",
+                        fontSize = 32.sp,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        "Book appointments with the best doctors near you",
+                        fontSize = 14.sp,
+                        color = Color.White.copy(alpha = 0.9f),
+                        lineHeight = 20.sp
+                    )
+                }
+
+                // Doctor Illustration Icon
+                Box(
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.LocalHospital,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(60.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@SuppressLint("DefaultLocale")
+@Composable
+fun FeaturedDoctorCard(
+    doctor: DoctorDto,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .width(280.dp)
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Doctor Avatar
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFE3F2FD)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = null,
+                        tint = Color(0xFF1976D2),
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = doctor.name,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF212121),
+                        maxLines = 1
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.MedicalServices,
+                            contentDescription = null,
+                            tint = Color(0xFF7B1FA2),
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = doctor.speciality,
+                            fontSize = 13.sp,
+                            color = Color(0xFF757575),
+                            maxLines = 1
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Divider(color = Color(0xFFEEEEEE))
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Fee
+                Column {
+                    Text(
+                        "Fee",
+                        fontSize = 11.sp,
+                        color = Color.Gray
+                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.CurrencyRupee,
+                            contentDescription = null,
+                            tint = Color(0xFF7B1FA2),
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Text(
+                            text = "${doctor.fee}",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF7B1FA2)
+                        )
+                    }
+                }
+
+                // Distance
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        "Distance",
+                        fontSize = 11.sp,
+                        color = Color.Gray
+                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = null,
+                            tint = Color(0xFF1976D2),
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(2.dp))
+                        Text(
+                            text = String.format("%.1f km", doctor.distance),
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF1976D2)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun QuickActionsSection(navController: NavController) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+    ) {
+        Text(
+            "Quick Actions",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF212121)
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            QuickActionCard(
+                icon = Icons.Default.CalendarMonth,
+                title = "My Appointments",
+                color = Color(0xFF1976D2),
+                modifier = Modifier.weight(1f),
+                onClick = {
+                    navController.navigate(AppRoutes.MyAppointment.route)
+                }
+            )
+
+            QuickActionCard(
+                icon = Icons.Default.Search,
+                title = "Find Doctors",
+                color = Color(0xFF7B1FA2),
+                modifier = Modifier.weight(1f),
+                onClick = {
+                    navController.navigate(AppRoutes.AllDoctorScreen.route)
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun QuickActionCard(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    color: Color,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = modifier.clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = color.copy(alpha = 0.1f)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = title,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = color,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@Composable
+fun StatisticsSection(doctorCount: Int) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.White
@@ -363,95 +531,124 @@ fun DoctorItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(20.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            // Doctor Avatar
-            Box(
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFE3F2FD)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = null,
-                    tint = Color(0xFF1976D2),
-                    modifier = Modifier.size(32.dp)
-                )
-            }
+            StatItem(
+                icon = Icons.Default.LocalHospital,
+                value = "$doctorCount+",
+                label = "Doctors",
+                color = Color(0xFF1976D2)
+            )
 
-            Spacer(modifier = Modifier.width(16.dp))
+            VerticalDivider(
+                modifier = Modifier.height(60.dp),
+                color = Color(0xFFEEEEEE)
+            )
 
-            // Doctor Info
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = doctor.name,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF212121)
-                )
+            StatItem(
+                icon = Icons.Default.MedicalServices,
+                value = "15+",
+                label = "Specialties",
+                color = Color(0xFF7B1FA2)
+            )
 
-                Spacer(modifier = Modifier.height(4.dp))
+            VerticalDivider(
+                modifier = Modifier.height(60.dp),
+                color = Color(0xFFEEEEEE)
+            )
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.MedicalServices,
-                        contentDescription = null,
-                        tint = Color(0xFF7B1FA2),
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = doctor.speciality,
-                        fontSize = 14.sp,
-                        color = Color(0xFF757575)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = Color(0xFFF3E5F5)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.CurrencyRupee,
-                                contentDescription = null,
-                                tint = Color(0xFF7B1FA2),
-                                modifier = Modifier.size(14.dp)
-                            )
-                            Spacer(modifier = Modifier.width(2.dp))
-                            Text(
-                                text = "${doctor.fee}",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF7B1FA2)
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Arrow Icon
-            Icon(
-                imageVector = Icons.Default.ChevronRight,
-                contentDescription = null,
-                tint = Color(0xFF9E9E9E)
+            StatItem(
+                icon = Icons.Default.Star,
+                value = "4.8",
+                label = "Rating",
+                color = Color(0xFFFFA726)
             )
         }
     }
 }
 
+@Composable
+fun StatItem(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    value: String,
+    label: String,
+    color: Color
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = color,
+            modifier = Modifier.size(28.dp)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = value,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF212121)
+        )
+        Text(
+            text = label,
+            fontSize = 12.sp,
+            color = Color.Gray
+        )
+    }
+}
+
+@Composable
+fun LoadingScreen() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            CircularProgressIndicator(color = Color(0xFF1976D2))
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Finding nearby doctors...",
+                color = Color(0xFF616161),
+                fontSize = 14.sp
+            )
+        }
+    }
+}
+
+@Composable
+fun ErrorScreen(error: String) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color(0xFFFFEBEE)
+            ),
+            modifier = Modifier.padding(24.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Error,
+                    contentDescription = null,
+                    tint = Color(0xFFD32F2F),
+                    modifier = Modifier.size(48.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = error,
+                    color = Color(0xFF424242),
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+    }
+}
 
 
