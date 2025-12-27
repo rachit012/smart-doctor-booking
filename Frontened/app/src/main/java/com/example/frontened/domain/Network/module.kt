@@ -1,5 +1,6 @@
 package com.example.frontened.domain.Network
 
+
 import android.content.Context
 import android.content.SharedPreferences
 import com.example.frontened.data.repository.AppointmentRepoImpl
@@ -24,11 +25,17 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
+
+
+
+
+
 
     @Provides
     @Singleton
@@ -38,6 +45,8 @@ object NetworkModule {
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
+
+
 
     @Provides
     @Singleton
@@ -107,18 +116,7 @@ object NetworkModule {
 //    }
 
 
-//    @Module
-//    @InstallIn(SingletonComponent::class)
-//    object FakeRepoModule {
-//
-//        @Provides
-//        @Singleton
-//        fun provideAuthRepository(
-//            tokenManager: TokenManager
-//        ): AuthRepository {
-//            return FakeAuthRepository(tokenManager)
-//        }
-//    }
+
 
     @Provides
     @Singleton

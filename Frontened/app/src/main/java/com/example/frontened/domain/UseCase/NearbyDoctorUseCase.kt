@@ -10,7 +10,7 @@ class NearbyDoctorUseCase @Inject constructor(
     private val repo: AuthRepository
 ) {
 
-    suspend operator fun invoke(lat: Double, lng: Double) : Flow<ResultState<List<DoctorDto>>> {
-        return repo.fetchNearbyDoctors(lat, lng)
+    suspend operator fun invoke(lat: Double, lng: Double, distance: Int) : Flow<ResultState<List<DoctorDto>>> {
+        return repo.fetchNearbyDoctors(lat, lng, distance)
     }
 }

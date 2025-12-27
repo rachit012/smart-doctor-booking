@@ -1,13 +1,12 @@
 package com.example.frontened.presentation.loginScreen
 
-
-
 import dagger.hilt.android.lifecycle.HiltViewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.frontened.common.ResultState
 import com.example.frontened.data.dto.LoginRequestData
+import com.example.frontened.domain.UseCase.LoginUserUseCase
 import com.example.frontened.domain.UseCase.RegisterUserUseCase
 
 import com.example.frontened.domain.repo.AuthRepository
@@ -27,21 +26,37 @@ class LoginViewModel @Inject constructor(
 
     fun login(request: LoginRequestData) {
         viewModelScope.launch {
-            registerUserUseCase(request).collect { result ->
+            loginUserUseCase(request).collect { result ->
                 when (result) {
                     is ResultState.Loading -> {
-                        _state.value = LoginState(loading = true)
+                        _state.value = _state.value.copy(
+                            loading = true,
+                            error = null,
+                            message = null
+                        )
                     }
 
                     is ResultState.Success -> {
-                        _state.value = LoginState(message = result.data)
+                        _state.value = _state.value.copy(
+                            loading = false,
+                            message = result.data,
+                            error = null
+                        )
                     }
 
                     is ResultState.Error -> {
-                        _state.value = LoginState(error = result.message)
+                        _state.value = _state.value.copy(
+                            loading = false,
+                            error = result.message
+                        )
                     }
                 }
             }
         }
     }
+
+    fun clearState() {
+        _state.value = LoginState()
+    }
+
 }

@@ -14,6 +14,7 @@ data class LoginResponseDto(
     val data: TokenData?
 )
 
+@Serializable
 data class TokenData(
     val accessToken: String
 )

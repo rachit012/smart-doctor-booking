@@ -3,9 +3,12 @@ package com.example.frontened.domain.di
 import com.example.frontened.data.dto.ApiResponse
 import com.example.frontened.data.dto.AppointmentDto
 import com.example.frontened.data.dto.BookAppointmentRequest
+import com.example.frontened.data.dto.DoctorAppointmentResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.PATCH
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 interface AppointmentApi {
 

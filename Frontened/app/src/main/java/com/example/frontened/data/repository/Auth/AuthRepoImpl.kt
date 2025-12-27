@@ -1,7 +1,5 @@
 package com.example.frontened.data.repository.Auth
 
-
-
 import android.util.Log
 import androidx.compose.material3.CircularProgressIndicator
 import com.example.frontened.common.ResultState
@@ -153,4 +151,6 @@ class AuthRepoImpl @Inject constructor(
             emit(ResultState.Error(e.message ?: "Something went wrong"))
         }
     }
+
+
 }

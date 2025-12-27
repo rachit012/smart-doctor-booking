@@ -1,13 +1,16 @@
 package com.example.frontened.data.repository
 
+
 import com.example.frontened.common.ResultState
 import com.example.frontened.data.dto.AppointmentDto
 import com.example.frontened.data.dto.BookAppointmentRequest
+import com.example.frontened.data.dto.DoctorAppointmentDto
 import com.example.frontened.domain.di.AppointmentApi
 import com.example.frontened.domain.di.AuthApi
 import com.example.frontened.domain.repo.AppointmentRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import retrofit2.HttpException
 import javax.inject.Inject
 
 class AppointmentRepoImpl @Inject constructor(
@@ -69,6 +72,16 @@ class AppointmentRepoImpl @Inject constructor(
             emit(ResultState.Error("Server error ${e.code()}"))
         } catch (e: Exception) {
             emit(ResultState.Error(e.localizedMessage ?: "Something went wrong"))
+        }
+    }
+
+    override fun cancelAppointment(id: String) = flow {
+        emit(ResultState.Loading)
+        try {
+            api.cancelAppointment(id)
+            emit(ResultState.Success("Appointment cancelled"))
+        } catch (e: Exception) {
+            emit(ResultState.Error("Failed to cancel appointment"))
         }
     }
 }

@@ -22,6 +22,7 @@ import com.example.frontened.presentation.Auth.AuthViewModel
 import com.example.frontened.presentation.navigation.AppRoutes
 import com.example.frontened.presentation.navigation.MainNavigation
 import com.example.frontened.ui.theme.FrontenedTheme
+import com.example.frontened.utils.JwtUtils
 import com.example.frontened.utils.LocationProvider
 import com.example.frontened.utils.TokenManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -43,15 +44,27 @@ class MainActivity : ComponentActivity() {
             val authViewModel: AuthViewModel = hiltViewModel()
             val authState by authViewModel.authState.collectAsState()
 
+            val token = tokenManager.getAccessToken()
+            val role = token?.let{ JwtUtils.getRole(token) }
+
             when (authState) {
                 AuthState.Authenticated -> {
-                    MainNavigation(startScreen = AppRoutes.PatientScreen.route, locationProvider, tokenManager)
+                    if(role == "PATIENT"){
+                        MainNavigation(startScreen = AppRoutes.PatientScreen.route, locationProvider, tokenManager)
+                    }
+
+                    if(role == "DOCTOR") {
+                        MainNavigation(startScreen = AppRoutes.DoctorDashBoard.route, locationProvider, tokenManager)
+                    }
+
                 }
 
                 AuthState.Unauthenticated -> {
                     MainNavigation(startScreen = AppRoutes.Login.route, locationProvider, tokenManager)
                 }
             }
+
+            // MainNavigation(AppRoutes.Login.route, locationProvider, tokenManager)
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 ActivityCompat.requestPermissions(

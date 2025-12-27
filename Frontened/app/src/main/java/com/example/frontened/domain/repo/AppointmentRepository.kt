@@ -2,6 +2,7 @@ package com.example.frontened.domain.repo
 
 import com.example.frontened.common.ResultState
 import com.example.frontened.data.dto.AppointmentDto
+import com.example.frontened.data.dto.DoctorAppointmentDto
 import kotlinx.coroutines.flow.Flow
 
 interface AppointmentRepository {

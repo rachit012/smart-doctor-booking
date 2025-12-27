@@ -1,5 +1,7 @@
 package com.example.frontened.data.dto
+
 import kotlinx.serialization.Serializable
+
 
 @Serializable
 data class BookAppointmentRequest(

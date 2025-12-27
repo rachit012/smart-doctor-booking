@@ -1,5 +1,6 @@
 package com.example.frontened.domain.Network
 
+
 import androidx.core.view.DragAndDropPermissionsCompat.request
 import com.example.frontened.utils.TokenManager
 import okhttp3.Interceptor
@@ -8,27 +9,29 @@ import javax.inject.Inject
 
 class AuthInterceptor @Inject constructor(
     private val tokenManager: TokenManager
-): Interceptor {
+) : Interceptor {
+
     override fun intercept(chain: Interceptor.Chain): Response {
+        val request = chain.request()
+        val path = request.url.encodedPath
 
-
-        val original = chain.request()
-        if (original.url.encodedPath.contains("/api/auth")) {
-            return chain.proceed(original)
+        // Skip auth endpoints
+        if (
+            path.contains("/api/auth/login") ||
+            path.contains("/api/auth/register") ||
+            path.contains("/api/auth/refresh")
+        ) {
+            return chain.proceed(request)
         }
 
         val token = tokenManager.getAccessToken()
 
+        val newRequest = request.newBuilder().apply {
+            if (token != null && !tokenManager.isTokenExpired()) {
+                addHeader("Authorization", "Bearer $token")
+            }
+        }.build()
 
-
-        val request = original.newBuilder()
-
-        if(token != null && !tokenManager.isTokenExpired()){
-            request.addHeader("Authorization", "Bearer $token")
-        }
-
-
-
-        return chain.proceed(request.build())
+        return chain.proceed(newRequest)
     }
 }

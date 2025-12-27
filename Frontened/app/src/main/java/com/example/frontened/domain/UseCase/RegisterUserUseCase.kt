@@ -26,6 +26,7 @@ class RegisterUserUseCase @Inject constructor(
 
 }
 
+
 class LoginUserUseCase @Inject constructor(
     private val authRepository: AuthRepository
 ) {

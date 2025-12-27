@@ -56,3 +56,6 @@ interface AuthApi {
         @Query("doctorId") doctorId: String,
         @Query("date") date: String
     ): ApiResponse<DoctorAvailabilityDto>
+
+
+}

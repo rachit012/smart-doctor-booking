@@ -19,3 +19,11 @@ data class RegisterRequestDto(
     val city: String? = null,
     val address: String? = null
 )
+
+@Serializable
+data class RegisterResponseDto(
+    val success: Boolean,
+    val data: TokenData?,
+    val message: String
+)
+

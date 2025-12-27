@@ -17,7 +17,12 @@ class TokenManager @Inject constructor(
     }
 
     fun getAccessToken(): String? =
-         sharedPreferences.getString("ACCESS_TOKEN", null)
+        sharedPreferences.getString("ACCESS_TOKEN", null)
+
+    fun getUserRole(): String? {
+        val token = getAccessToken() ?: return null
+        return JwtUtils.getRole(token)
+    }
 
     fun isTokenExpired(): Boolean {
         val token = getAccessToken() ?: return true

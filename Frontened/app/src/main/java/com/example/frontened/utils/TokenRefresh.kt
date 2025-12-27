@@ -1,7 +1,5 @@
 package com.example.frontened.utils
 
-
-
 import com.example.frontened.domain.di.AuthApi
 import kotlinx.coroutines.runBlocking
 import okhttp3.Authenticator
@@ -55,4 +53,3 @@ private fun responseCount(response: Response): Int {
     }
     return count
 }
-
