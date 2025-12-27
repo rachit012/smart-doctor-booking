@@ -20,6 +20,7 @@ app.use("/api/auth", require("./routes/auth.routes"))
 app.use("/api/profile", require("./routes/profile.routes"))
 app.use("/api/availability", require("./routes/availabilityRoutes"))
 app.use("/api/appointments", require("./routes/appointmentRoutes"))
+app.use("/api/doctors", require("./routes/doctorRoutes"))
 
 app.get("/", (req, res) => {
   res.json({ success: true, message: "API running" })

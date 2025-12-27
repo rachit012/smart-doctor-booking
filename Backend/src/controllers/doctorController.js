@@ -36,17 +36,26 @@ exports.getDoctorsBySpeciality = async (req, res) => {
 
 exports.getNearbyDoctors = async (req, res) => {
   try {
-    const { lat, lng, speciality } = req.query
+    const { lat, lng, distance=5, speciality } = req.query
+
+    if (!lat || !lng) {
+      return res.status(400).json({
+        success: false,
+        message: "Latitude and longitude are required"
+      })
+    }
 
     const query = {
       role: "DOCTOR",
+      "location.type": "Point",
+      "location.coordinates": { $exists: true, $ne: [] },
       location: {
-        $near: {
+        $nearSphere: {
           $geometry: {
             type: "Point",
             coordinates: [Number(lng), Number(lat)]
           },
-          $maxDistance: 10000 
+          $maxDistance: Number(distance) * 1000
         }
       }
     }
