@@ -58,4 +58,17 @@ class AppointmentRepoImpl @Inject constructor(
             emit(ResultState.Error(e.localizedMessage ?: "Failed to load appointments"))
         }
     }
+
+    override fun getDoctorAppointments(): Flow<ResultState<List<DoctorAppointmentDto>>> = flow {
+        emit(ResultState.Loading)
+
+        try {
+            val response = api.getDoctorAppointments()
+            emit(ResultState.Success(response.data))
+        } catch (e: HttpException) {
+            emit(ResultState.Error("Server error ${e.code()}"))
+        } catch (e: Exception) {
+            emit(ResultState.Error(e.localizedMessage ?: "Something went wrong"))
+        }
+    }
 }

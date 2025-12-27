@@ -13,4 +13,6 @@ interface AppointmentRepository {
     ): Flow<ResultState<String>>
 
     fun getMyAppointments(): Flow<ResultState<List<AppointmentDto>>>
+
+    fun getDoctorAppointments(): Flow<ResultState<List<DoctorAppointmentDto>>>
 }
