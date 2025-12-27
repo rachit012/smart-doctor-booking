@@ -81,6 +81,7 @@ fun patientScreen(
                     )
                 )
             )
+            .padding(bottom = 75.dp)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
 

@@ -1,7 +1,5 @@
 package com.example.frontened.presentation.navigation
 
-
-
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.material3.Scaffold
@@ -21,6 +19,7 @@ import com.example.frontened.presentation.ProfileScreen.ProfileScreen
 
 import com.example.frontened.presentation.SignupScreen.SignUpScreen
 import com.example.frontened.presentation.components.BottomBar
+import com.example.frontened.presentation.DoctorAppointments.DoctorAppointmentsScreen
 import com.example.frontened.presentation.loginScreen.LoginScreen
 
 import com.example.frontened.presentation.patientScreen.DoctorDetailScreen
@@ -49,7 +48,7 @@ fun MainNavigation(startScreen: String, locationProvider: LocationProvider, toke
     Scaffold(
         bottomBar = {
             if(showBottomBar){
-                BottomBar(navController)
+                BottomBar(navController, tokenManager)
             }
         }
     )
@@ -98,6 +97,10 @@ fun MainNavigation(startScreen: String, locationProvider: LocationProvider, toke
 
             composable(AppRoutes.MyAppointment.route) {
                 PatientAppointmentScreen(navController)
+            }
+
+            composable(AppRoutes.DoctorAppointmentScreen.route){
+                DoctorAppointmentsScreen(navController)
             }
         }
 
